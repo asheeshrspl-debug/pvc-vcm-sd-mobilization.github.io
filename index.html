@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PVC/VCM SD Mobilization Command Center</title>
+<style>
+:root{
+  --bg:#f4f3fb; --surface:#ffffff; --ink:#14122b; --ink2:#4b4a63; --muted:#8a89a0; --line:#e6e5f2; --grid:#eceaf6;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4; --c6:#008300; --c7:#6250d6; --c8:#e34948;
+  --good:#0a8a3a; --warn:#b45309; --bad:#d03b3b; --chip:#eef0ff; --shadow:0 6px 24px rgba(60,40,140,.10);
+  --hero:linear-gradient(120deg,#4f3ad6 0%,#8b3fd9 38%,#e8508f 72%,#f08a3c 100%);
+}
+:root[data-theme="dark"]{
+  --bg:#0f0e1c; --surface:#1a1930; --ink:#f0efff; --ink2:#c3c2dc; --muted:#8c8ba8; --line:#2d2c4a; --grid:#262544;
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181; --c6:#0ca30c; --c7:#9085e9; --c8:#e66767;
+  --good:#3ddc84; --warn:#fab219; --bad:#ff7b7b; --chip:#26244a; --shadow:0 6px 24px rgba(0,0,0,.4);
+  --hero:linear-gradient(120deg,#2d1f8f 0%,#5b2a98 40%,#a13373 75%,#b86a2d 100%);
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+.hero{background:var(--hero);color:#fff;padding:12px 22px 44px}
+.hero-top{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.hero h1{margin:0;font-size:19px;letter-spacing:-.2px} .hero p{margin:2px 0 0;opacity:.9;font-size:12px}
+.grow{flex:1}
+.btn{border:0;border-radius:10px;padding:7px 12px;font-weight:600;font-size:12px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;transition:transform .08s,box-shadow .15s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:#fff;color:#4f3ad6;box-shadow:0 4px 14px rgba(0,0,0,.18)} .btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:rgba(255,255,255,.18);color:#fff}
+.btn.solid{background:var(--c7);color:#fff} .btn.line{background:var(--chip);color:var(--ink)}
+main{max-width:1700px;margin:-32px auto 24px;padding:0 14px}
+.card{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:11px 13px;border:1px solid var(--line)}
+.uploads{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:10px;text-align:center;cursor:pointer;position:relative;transition:.15s;background:var(--bg);min-height:78px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.drop:hover,.drop.over{border-color:var(--c7);background:var(--chip)}
+.drop .n{font-size:11px;font-weight:700;letter-spacing:.6px;color:var(--c7);text-transform:uppercase}
+.drop .t{font-weight:700;font-size:13px} .drop .s{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.drop.ok{border-style:solid;border-color:var(--c3)} .drop.ok .n{color:var(--c3)}
+.drop.err{border-style:solid;border-color:var(--bad)} .drop.err .s{color:var(--bad)}
+.drop input{display:none}
+.msg{margin-top:8px;padding:7px 11px;border-radius:8px;background:var(--chip);color:var(--ink2);font-size:13px}
+.msg.bad{background:#ffe9e9;color:#a11}
+:root[data-theme="dark"] .msg.bad{background:#3a1a22;color:#ffb4b4}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 8px}
+.tab{border:0;background:var(--surface);color:var(--ink2);padding:6px 13px;border-radius:9px;font-weight:600;cursor:pointer;border:1px solid var(--line);font-size:12px}
+.tab.on{background:var(--c7);color:#fff;border-color:var(--c7);box-shadow:0 3px 8px rgba(98,80,214,.3)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.filters label{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;font-weight:600}
+select,input[type=text],input[type=number],textarea{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font:inherit;font-size:12px}
+.grid{display:grid;gap:14px} .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)} .g12{grid-template-columns:1.4fr 1fr}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.kpi{border-radius:16px;padding:14px 16px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.kpi .l{font-size:12px;opacity:.92;font-weight:600} .kpi .v{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-top:2px} .kpi .d{font-size:12px;opacity:.92;margin-top:2px}
+.k1{background:linear-gradient(135deg,#2a78d6,#6250d6)} .k2{background:linear-gradient(135deg,#1baf7a,#008300)} .k3{background:linear-gradient(135deg,#eb6834,#e34948)}
+.k4{background:linear-gradient(135deg,#e87ba4,#6250d6)} .k5{background:linear-gradient(135deg,#eda100,#eb6834)} .k6{background:linear-gradient(135deg,#17a2b8,#2a78d6)}
+.k7{background:linear-gradient(135deg,#6250d6,#2a1d8f)}
+h3{margin:0 0 7px;font-size:13px} h3 small{color:var(--muted);font-weight:500;margin-left:6px}
+.chart{position:relative;height:300px} .chart.tall{height:420px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+table{border-collapse:collapse;width:100%;font-size:12px;line-height:1.25}
+th{position:sticky;top:0;background:var(--chip);color:var(--ink2);text-align:left;padding:5px 8px;font-size:11.5px;cursor:pointer;white-space:nowrap;user-select:none}
+td{padding:3px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:hover td{background:var(--bg)}
+  .rm{white-space:normal;display:block;width:210px;font-size:11px;color:var(--muted)}.rm .pill{margin:2px 0 0;display:inline-block;font-size:10.5px}
+tfoot td{font-weight:700;background:var(--chip);position:sticky;bottom:0;border-top:2px solid var(--c7)}
+.num{text-align:right;font-variant-numeric:tabular-nums} th.num{text-align:right}
+.tw{overflow:auto;max-height:68vh;border-radius:8px;border:1px solid var(--line)}
+.bar{height:6px;border-radius:4px;background:var(--grid);min-width:50px;position:relative;overflow:hidden}
+.bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,var(--c1),var(--c7))}
+.pill{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;margin:1px 3px 1px 0}
+.p-bad{background:#ffe4e1;color:#b3261e} .p-warn{background:#fff1d6;color:#9a5b00} .p-ok{background:#dcf7e6;color:#0a6b30} .p-info{background:var(--chip);color:var(--c7)}
+:root[data-theme="dark"] .p-bad{background:#4a2026;color:#ff9a9a} :root[data-theme="dark"] .p-warn{background:#47360f;color:#ffd27a} :root[data-theme="dark"] .p-ok{background:#12391f;color:#7be8a4}
+.na{color:var(--warn);font-weight:600}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:5px;font-size:11.5px;color:var(--muted)}
+.note{font-size:12px;color:var(--muted);margin:6px 0 0}
+.hide{display:none!important}
+.lock{position:fixed;inset:0;background:var(--hero);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.lockbox{background:var(--surface);color:var(--ink);border-radius:16px;padding:26px 28px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.lockbox h2{margin:0 0 4px;font-size:19px}.lockbox p{margin:0 0 14px;color:var(--muted);font-size:13px}
+.lockbox input{width:100%;margin-bottom:10px;padding:10px 12px;font-size:14px}.lockbox .err{color:var(--bad);font-size:12px;min-height:16px;margin-bottom:6px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#14122b;color:#fff;padding:10px 18px;border-radius:12px;font-weight:600;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.empty{padding:50px 20px;text-align:center;color:var(--muted)}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.fillcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--surface)}
+.fillcard .big{font-size:26px;font-weight:800}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+textarea{width:100%;min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.upbox{display:flex;flex-direction:column;gap:8px}
+.cols{font-size:11px;color:var(--muted);line-height:1.2}
+.cols .lh{font-weight:700;letter-spacing:.4px;text-transform:uppercase;font-size:10px;margin-bottom:3px}
+.chip{display:inline-block;font-size:10px;padding:1px 6px;border-radius:12px;margin:2px 3px 0 0;border:1px solid var(--line);background:var(--bg);color:var(--ink2);cursor:default}
+.chip.req{font-weight:700;border-color:var(--c7);color:var(--c7)} .chip.opt{border-style:dashed}
+.chip.ok{background:#dcf7e6;color:#0a6b30;border-color:#7fd3a2;border-style:solid} .chip.bad{background:#ffe4e1;color:#b3261e;border-color:#f19a92;border-style:solid;font-weight:700} .chip.warn{background:#fff1d6;color:#9a5b00;border-color:#f0c874;border-style:solid}
+:root[data-theme="dark"] .chip.ok{background:#12391f;color:#7be8a4;border-color:#1f6b3a} :root[data-theme="dark"] .chip.bad{background:#4a2026;color:#ff9a9a;border-color:#7a3038} :root[data-theme="dark"] .chip.warn{background:#47360f;color:#ffd27a;border-color:#7a5d1a}
+.chk{margin-top:4px;font-size:11px} .chk.good{color:var(--good)} .chk.badt{color:var(--bad)} .chk.warnt{color:var(--warn)}
+.legend2{margin-top:8px;font-size:11.5px;color:var(--ink2);background:var(--chip);border-radius:8px;padding:6px 10px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;align-items:start}
+.pair>.card{margin-bottom:0!important}
+@media(max-width:1000px){.pair{grid-template-columns:1fr}.uploads{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g12{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>window.__SITE__=true;</script>
+<script src="lib/exceljs.min.js"></script>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-top">
+    <div><h1>PVC/VCM SD Mobilization Command Center</h1><p id="asof">Upload the four source files to generate the report. All processing is done locally in your browser; no data is sent anywhere.</p></div>
+    <div class="grow"></div>
+    <button class="btn ghost" id="theme">Dark mode</button>
+    <button class="btn primary" id="dlExcel" disabled>⬇ Download Excel report</button>
+  </div>
+</div>
+<main>
+  <div class="card hide" id="upcard">
+    <div class="row hide" id="pubrow" style="margin-bottom:8px"><span id="pubState" class="note" style="font-size:12px;margin:0"></span><div class="grow"></div><button class="btn solid" id="pubBtn" disabled>⬆ Publish update for everyone</button></div>
+    <div class="row hide" id="upbar"><span id="upsum" class="note" style="font-size:12px"></span><div class="grow"></div><button class="btn line" id="upToggle">View / replace files</button><button class="btn line" id="resetAll2">↺ Reset all files</button></div>
+    <div id="upbody">
+    <div class="row" style="justify-content:flex-end;margin-bottom:6px"><button class="btn line" id="resetAll">↺ Reset all files</button></div>
+    <div class="uploads" id="uploads"></div>
+    <div class="legend2"><b>Before uploading:</b> each file must contain the columns listed below its box. Column order is irrelevant and additional columns are ignored. <span class="chip req">Solid</span> = required, <span class="chip opt">dashed</span> = optional (processing continues and the report states what could not be filled). After upload the chips turn green (found), amber (optional, not found) or red (required, not found).</div>
+    <div id="msg" class="msg">Upload files 1 to 4; the report is generated automatically once all four are loaded. A file can be uploaded again at any time to refresh the figures. The optional TVC status file (EP and Pass / Fail result) powers the TVC Status tab and the TVC result in the Cards Tracker. The optional Last update file (the package-wise approvals table from the previous report) provides the Previous Data and Change figures.</div>
+    </div>
+  </div>
+  <div id="app" class="hide">
+    <div class="tabs" id="tabs"></div>
+    <div class="filters" id="filters">
+      <label>Package <select id="fPkg"></select></label>
+      <label>Supplier <select id="fSup"></select></label>
+      <button class="btn line" id="fReset">Reset filters</button>
+      <span class="note" id="fNote"></span>
+    </div>
+    <div id="view"></div>
+  </div>
+</main>
+<div id="toast" class="toast hide"></div>
+<div id="lock" class="lock hide"><div class="lockbox"><h2>PVC/VCM SD Mobilization Command Center</h2><p>This dashboard is password protected. Enter the password you were given.</p><input type="password" id="lockPw" placeholder="Password" autocomplete="current-password"><div class="err" id="lockErr"></div><button class="btn solid" id="lockBtn" style="width:100%;justify-content:center">Open dashboard</button></div></div>
+
+<script>
+/* Shutdown Card Tracker - data core (browser + node) */
+(function (g) {
+'use strict';
+const NA = 'Not Available';
+const up = s => String(s == null ? '' : s).trim().toUpperCase();
+const norm = s => String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+function prim(v) {
+  if (v == null) return '';
+  if (v instanceof Date) return v;
+  if (typeof v === 'object') {
+    if (v.richText) return v.richText.map(t => t.text).join('').trim();
+    if ('result' in v) return prim(v.result);
+    if ('text' in v) return prim(v.text);
+    return '';
+  }
+  if (typeof v === 'string') return v.trim();
+  return v;
+}
+const str = v => { v = prim(v); return v instanceof Date ? '' : String(v).trim(); };
+function normWO(v) {
+  let s = str(v).replace(/\.0+$/, '');
+  if (/^\d+$/.test(s)) return s.padStart(10, '0');
+  return s;
+}
+function parseDate(v) {
+  v = prim(v);
+  if (v instanceof Date) return v;
+  const m = String(v).match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (!m) return null;
+  return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+}
+const fmtDMY = d => d ? String(d.getDate()).padStart(2, '0') + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + d.getFullYear() : '';
+const dayKey = d => d ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') : '';
+
+/* ---------- reading: header detection by column NAME, so order / extra / missing columns never break a file ---------- */
+const nk = x => String(prim(x) instanceof Date ? '' : prim(x)).toLowerCase().replace(/[^a-z0-9]/g, '');
+const SPECS = {
+  card: { label: 'Card Status report', sheets: ['Sheet_1'], key: 'EP Number', cols: [
+    { k: 'EP Number', lvl: 'req', alts: ['EP No', 'EP Num'] },
+    { k: 'Card Category', lvl: 'req' }, { k: 'Status', lvl: 'req' }, { k: 'WorkOrder', lvl: 'req', alts: ['Work Order', 'WO'] },
+    { k: 'Card Approved', lvl: 'req' }, { k: 'HR Approval', lvl: 'req' }, { k: 'Medical', lvl: 'req' }, { k: 'Safety', lvl: 'req' },
+    { k: 'Vigilance', lvl: 'req' }, { k: 'EIC Status', lvl: 'req' }, { k: 'BRIBS', lvl: 'req' }, { k: 'Print Date', lvl: 'req' },
+    { k: 'Workmen', lvl: 'opt', eff: 'worker names will be blank' }, { k: 'Manufacturing Site Name', lvl: 'opt', eff: 'site will be blank' },
+    { k: 'Area of Movement', lvl: 'opt', eff: 'area will be blank' }, { k: 'EIC', lvl: 'opt', eff: 'EIC filter and EIC views will be empty' },
+    { k: 'Card type', lvl: 'opt', alts: ['Card Type'], eff: 'card type will be blank' }, { k: 'Card Created Date', lvl: 'opt', eff: 'daily trend and "days waiting" will be empty' }] },
+  tvc: { label: 'TVC status', sheets: ['Sheet1'], key: 'EP', cols: [
+    { k: 'EP', lvl: 'req', alts: ['EP Number', 'EP No', 'Worker ID'] },
+    { k: 'TVC Status', lvl: 'req', alts: ['TVC', 'TVC Result', 'EIC', 'EIC Status', 'Result'] }] },
+  master: { label: 'Shutdown master sheet', sheets: ['Master'], key: 'EP NO', cols: [
+    { k: 'EP NO', lvl: 'req', alts: ['EP Number', 'EP No.'] },
+    { k: 'Aadhar No', lvl: 'opt', alts: ['Aadhaar No', 'Aadhaar Number', 'Aadhar Number', 'Aadhar No.'], eff: 'Aadhaar will come from the Employee file (masked)' },
+    { k: 'Contact No', lvl: 'opt', alts: ['Mobile No', 'Mobile Number', 'Contact Number'], eff: 'mobile will come from the Employee file only' },
+    { k: 'DOCUMENT DESIGNATION', lvl: 'opt', alts: ['Designation'], eff: 'trade will come from the Employee file' },
+    { k: 'DESIGNATION BETTER PLACE', lvl: 'opt', eff: 'Employee trades will not be translated to Master trade names' },
+    { k: 'SUPPLIERS', lvl: 'opt', alts: ['Supplier'], eff: 'supplier will use MAIN SUPPLIERS, or Not Available' },
+    { k: 'MAIN SUPPLIERS', lvl: 'opt', alts: ['Main Supplier'], eff: 'only the SUPPLIERS column will be used' }] },
+  employee: { label: 'Employee ID list', sheets: ['Employee Details'], key: 'Worker ID', cols: [
+    { k: 'Worker ID', lvl: 'req', alts: ['WorkerID', 'EP Number', 'EP No'] },
+    { k: 'Mobile Number (Self)', lvl: 'opt', alts: ['Mobile Number', 'Mobile No'], eff: 'mobile will come from Master only' },
+    { k: 'Trade', lvl: 'opt', eff: 'trade will not be filled when missing in Master' },
+    { k: 'Aadhaar Number', lvl: 'opt', alts: ['Aadhar Number', 'Aadhar No', 'Aadhaar No'], eff: 'Aadhaar will not be filled when missing in Master' },
+    { k: 'Full Name', lvl: 'opt', eff: 'none (name is taken from the Card Status report)' }] },
+  supplier: { label: 'Supplier manpower', sheets: ['Sheet3'], key: 'Supplier', cols: [
+    { k: 'Supplier', lvl: 'req', alts: ['Supplier Name', 'Name'] },
+    { k: 'Manpower', lvl: 'req', alts: ['Man Power', 'Commitment', 'Count'] },
+    { k: 'Remarks', lvl: 'opt', alts: ['Remark', 'Note'], eff: 'QA/QC & Safety people will not be grouped as "Common"' }] },
+  prev: { label: 'Last update (package-wise approvals table)', parts: ['Shutdown Package', 'CREATE', 'HR Approval', 'Medical', 'Safety', 'Vigilance', 'EIC Status', 'BRIBS', 'PRINT'] }
+};
+
+function matchCols(spec, headerCells) {
+  // headerCells: { colIndex: normalizedText } -> returns { colIndexByKey, foundHeader }
+  const used = new Set(), byKey = {}, foundHeader = {};
+  spec.cols.forEach(c => {
+    const names = [c.k].concat(c.alts || []).map(nk);
+    const idx = Object.keys(headerCells).map(Number).sort((a, b) => a - b).find(i => !used.has(i) && names.includes(headerCells[i]));
+    if (idx != null) { used.add(idx); byKey[c.k] = idx; foundHeader[c.k] = headerCells[idx]; }
+  });
+  return { byKey, count: Object.keys(byKey).length };
+}
+function detect(wb, spec) {
+  let best = null;
+  wb.worksheets.forEach((ws, wi) => {
+    const maxR = Math.min(ws.rowCount || 15, 15);
+    for (let r = 1; r <= maxR; r++) {
+      const cells = {}; let any = false;
+      ws.getRow(r).eachCell({ includeEmpty: false }, (c, i) => { const t = nk(c.value); if (t) { cells[i] = t; any = true; } });
+      if (!any) continue;
+      const m = matchCols(spec, cells);
+      const score = spec.cols.reduce((a, c) => a + (m.byKey[c.k] != null ? (c.lvl === 'req' ? 3 : 1) : 0), 0) + (spec.sheets.includes(ws.name) ? 0.5 : 0);
+      if (!best || score > best.score) best = { score, ws, row: r, m, ncols: Object.keys(cells).length };
+    }
+  });
+  return best;
+}
+function readBySpec(wb, spec) {
+  const d = detect(wb, spec);
+  const items = spec.cols.map(c => ({ key: c.k, lvl: c.lvl, eff: c.eff || '', found: d && d.m.byKey[c.k] != null }));
+  const fatal = items.filter(i => i.lvl === 'req' && !i.found).map(i => i.key);
+  const check = { label: spec.label, sheet: d ? d.ws.name : '', headerRow: d ? d.row : 0, items, fatal, extra: d ? Math.max(0, d.ncols - d.m.count) : 0, rows: 0 };
+  if (!d || fatal.length === spec.cols.filter(c => c.lvl === 'req').length) { check.fatal = fatal.length ? fatal : [spec.key]; return { rows: [], check }; }
+  const idxKeys = Object.entries(d.m.byKey);
+  const rows = [];
+  d.ws.eachRow({ includeEmpty: false }, (row, rn) => {
+    if (rn <= d.row) return;
+    const o = {}; let any = false;
+    for (const [k, i] of idxKeys) { const v = prim(row.getCell(i).value); o[k] = v; if (k === spec.key && v !== '') any = true; }
+    if (any) rows.push(o);
+  });
+  check.rows = rows.length;
+  return { rows, check };
+}
+async function loadWorkbook(ExcelJS, buf) { const wb = new ExcelJS.Workbook(); await wb.xlsx.load(buf); return wb; }
+const readerFor = name => async (ExcelJS, buf) => readBySpec(await loadWorkbook(ExcelJS, buf), SPECS[name]);
+const readCard = readerFor('card'), readMaster = readerFor('master'), readEmployee = readerFor('employee'), readSupplier = readerFor('supplier'), readTvc = readerFor('tvc');
+const tvcNorm = v => { const t = nk(v); return t.startsWith('pass') ? 'Pass' : t.startsWith('fail') ? 'Fail' : 'TVC NA'; };
+
+/* previous data: ONLY the package-wise approvals table (header names are searched in every sheet; position does not matter) */
+const PREV_COLS = [
+  { k: 'Shutdown Package', lvl: 'req', alts: ['Package'] }, { k: 'CREATE', lvl: 'req', alts: ['Created'] }, { k: 'HR Approval', lvl: 'req' }, { k: 'Medical', lvl: 'req' },
+  { k: 'Safety', lvl: 'req' }, { k: 'Vigilance', lvl: 'req' }, { k: 'EIC Status', lvl: 'req' }, { k: 'BRIBS', lvl: 'req' }, { k: 'PRINT', lvl: 'opt', alts: ['Printed'], eff: 'Printed is not compared' },
+  { k: 'WO', lvl: 'opt', eff: 'packages are matched by name only' }, { k: 'REQ', lvl: 'opt', eff: 'Required numbers stay empty' }
+];
+async function readPrevious(ExcelJS, buf) {
+  const wb = await loadWorkbook(ExcelJS, buf);
+  const nk = v => str(v).toLowerCase().replace(/[^a-z0-9]/g, '');
+  let best = null;
+  wb.worksheets.forEach(ws => {
+    const lim = Math.min(ws.rowCount, 40);
+    for (let r = 1; r <= lim; r++) {
+      const map = {}; let hit = 0;
+      ws.getRow(r).eachCell({ includeEmpty: false }, (c, ci) => {
+        const h = nk(c.value); if (!h) return;
+        PREV_COLS.forEach(sp => { if (map[sp.k] == null && [sp.k].concat(sp.alts || []).some(x => nk(x) === h)) { map[sp.k] = ci; hit++; } });
+      });
+      if (map['Shutdown Package'] != null && (!best || hit > best.hit)) best = { ws, r, map, hit };
+    }
+  });
+  const items = PREV_COLS.map(sp => ({ key: sp.k, lvl: sp.lvl, eff: sp.eff || '', found: !!(best && best.map[sp.k] != null) }));
+  const check = { label: 'Last update (package-wise approvals table)', sheet: best ? best.ws.name : '', headerRow: best ? best.r : 0, items, fatal: items.filter(i => i.lvl === 'req' && !i.found).map(i => i.key), extra: 0, rows: 0 };
+  const out = { totals: null, packages: [], trades: null, check };
+  if (!best) { check.fatal = ['Shutdown Package', 'CREATE', 'PRINT']; return out; }
+  const m = best.map, num = (r, k) => m[k] == null ? 0 : (Number(prim(best.ws.getRow(r).getCell(m[k]).value)) || 0);
+  const KEYS = ['CREATE', 'HR Approval', 'Medical', 'Safety', 'Vigilance', 'EIC Status', 'BRIBS', 'PRINT'];
+  let totalRow = 0;
+  for (let r = best.r + 1; r <= best.r + 40; r++) {
+    const name = str(best.ws.getRow(r).getCell(m['Shutdown Package']).value);
+    if (!name) { if (out.packages.length) break; continue; }
+    if (/^total$/i.test(name)) { totalRow = r; break; }
+    if (/previous|diff|pending/i.test(name)) break;
+    out.packages.push({ name, wo: m['WO'] == null ? '' : normWO(best.ws.getRow(r).getCell(m['WO']).value), req: num(r, 'REQ'), vals: KEYS.map(k => num(r, k)) });
+  }
+  check.rows = out.packages.length;
+  out.totals = KEYS.map((k, i) => totalRow ? num(totalRow, k) : out.packages.reduce((a, p) => a + p.vals[i], 0));
+  out.totals.push(null, null);
+  if (!out.packages.length) check.fatal = check.fatal.length ? check.fatal : ['package rows'];
+  return out;
+}
+
+/* ---------- defaults ---------- */
+/* Package names / work orders come from the report layout. Required (REQ) numbers are NOT known to the tool: left empty until typed in Settings. */
+const DEFAULT_PACKAGES = [
+  { id: 'P2', name: 'Static jobs (Package-2) 230249366', wo: '0230249366', req: 0 },
+  { id: 'P1', name: 'Static jobs (Package-1) 230249501', wo: '0230249501', req: 0 },
+  { id: 'FAB', name: 'Fabrication 230267731', wo: '0230267731', req: 0 },
+  { id: 'ROT', name: 'ROTARY', wo: '0230272784', req: 0 },
+  { id: 'W5', name: 'Work order 260072505', wo: '0260072505', req: 160 }
+];
+const PIVOT_ORDER = ['FAB', 'P1', 'P2', 'ROT', 'W5'];
+const DEFAULT_TRADES = {};
+const DEFAULT_ALIASES = [];
+const aliasText = list => list.map(a => a[0] + ' = ' + a[1]).join('\n');
+function parseAliases(text) {
+  const out = {};
+  String(text || '').split(/\n/).forEach(l => {
+    const i = l.indexOf('='); if (i < 1) return;
+    const a = norm(l.slice(0, i)), b = l.slice(i + 1).trim();
+    if (a && b) out[a] = b;
+  });
+  return out;
+}
+
+/* ---------- processing ---------- */
+const isDone = v => up(v) === 'DONE';
+const STAGES = [['hr', 'HR Approval'], ['med', 'Medical'], ['saf', 'Safety'], ['vig', 'Vigilance'], ['eicSt', 'EIC Status'], ['bribs', 'BRIBS']];
+const isQA = d => /qa\s*\/?\s*qc/i.test(d || '');
+const isSafety = d => /safety/i.test(d || '');
+
+function normMobile(v) {
+  let d = String(prim(v) instanceof Date ? '' : prim(v)).replace(/\D/g, '');
+  if (d.length > 10) d = d.slice(-10);
+  return d.length === 10 ? d : '';
+}
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+/* Match a supplier name written in Master to a line of the supplier file. Nothing is invented:
+   user mapping (Settings) > exact (ignoring case/spaces) > one name starts with the other > near-identical spelling. */
+function makeMatcher(lines, aliases) {
+  const map = new Map(); lines.forEach(l => { const k = norm(l.name); if (k && !map.has(k)) map.set(k, l.name); });
+  const keys = [...map.keys()];
+  return raw => {
+    const k = norm(raw); if (!k) return null;
+    if (aliases[k]) return { name: map.get(norm(aliases[k])) || aliases[k], how: 'your mapping' };
+    if (map.has(k)) return { name: map.get(k), how: 'exact' };
+    const pre = keys.filter(x => Math.min(x.length, k.length) >= 4 && (x.startsWith(k) || k.startsWith(x)));
+    if (pre.length === 1) return { name: map.get(pre[0]), how: 'name starts with' };
+    let best = null, bd = 0, tie = false;
+    keys.forEach(x => { if (Math.min(x.length, k.length) < 5) return; const r = 1 - lev(x, k) / Math.max(x.length, k.length); if (r > bd + 1e-9) { bd = r; best = x; tie = false; } else if (Math.abs(r - bd) < 1e-9) tie = true; });
+    if (best && bd >= 0.85 && !tie) return { name: map.get(best), how: 'similar spelling' };
+    return null;
+  };
+}
+
+function process(inp, cfg) {
+  cfg = cfg || {};
+  const packages = (cfg.packages || DEFAULT_PACKAGES).map(p => Object.assign({}, p, { wo: normWO(p.wo), req: Number(p.req) || 0 }));
+  const aliases = parseAliases(cfg.aliasText != null ? cfg.aliasText : '');
+  const master = inp.master, emp = inp.employee, card = inp.card, supp = inp.supplier;
+
+  const mMap = new Map(); master.forEach(r => { const k = str(r['EP NO']); if (k && !mMap.has(k)) mMap.set(k, r); });
+  const eMap = new Map(); emp.forEach(r => { const k = str(r['Worker ID']); if (k && !eMap.has(k)) eMap.set(k, r); });
+
+  const lines = supp.map(r => ({ name: str(r['Supplier']), remarks: str(r['Remarks']), manpower: Number(prim(r['Manpower'])) || 0 }));
+  const matcher = makeMatcher(lines, aliases);
+  const reg = new Map(); const regName = n => { const k = norm(n); if (!reg.has(k)) reg.set(k, String(n).trim()); return reg.get(k); };
+
+  const shut = card.filter(r => up(r['Card Category']) === 'SHUTDOWN' && ['VALID', 'PRE_VERIFIED'].includes(up(r['Status'])));
+  shut.sort((a, b) => str(a['EP Number']) < str(b['EP Number']) ? -1 : 1);
+
+  const fill = { mobile: { Employee: 0, Master: 0, [NA]: 0 }, aadhaar: { Master: 0, 'Employee (masked)': 0, [NA]: 0 },
+    desig: { Master: 0, Employee: 0, [NA]: 0 }, supplier: { Master: 0, [NA]: 0 }, notInMaster: 0, notInEmployee: 0 };
+  const unmatchedSuppliers = {};
+
+  const rows = shut.map(r => {
+    const ep = str(r['EP Number']);
+    const m = mMap.get(ep), e = eMap.get(ep);
+    if (!m) fill.notInMaster++;
+    if (!e) fill.notInEmployee++;
+
+    let mobile = '', mobileSrc = NA;
+    if (e && normMobile(e['Mobile Number (Self)'])) { mobile = normMobile(e['Mobile Number (Self)']); mobileSrc = 'Employee'; }
+    else if (m && normMobile(m['Contact No'])) { mobile = normMobile(m['Contact No']); mobileSrc = 'Master'; }
+    fill.mobile[mobileSrc]++;
+
+    let aadhaar = '', aadhaarSrc = NA;
+    const ma = m ? str(m['Aadhar No']).replace(/\s/g, '') : '';
+    if (/^\d{12}$/.test(ma)) { aadhaar = ma; aadhaarSrc = 'Master'; }
+    else if (e && str(e['Aadhaar Number'])) { aadhaar = str(e['Aadhaar Number']); aadhaarSrc = 'Employee (masked)'; }
+    fill.aadhaar[aadhaarSrc]++;
+
+    let desig = '', desigSrc = NA;
+    if (m && str(m['DOCUMENT DESIGNATION'])) { desig = str(m['DOCUMENT DESIGNATION']); desigSrc = 'Master'; }
+    else if (e && str(e['Trade'])) { desig = str(e['Trade']); desigSrc = 'Employee'; }
+    fill.desig[desigSrc]++;
+    if (!desig) desig = NA;
+
+    let supplier = NA, supplierSrc = NA, supplierRaw = '', supplierHow = '';
+    if (m) {
+      const cands = [str(m['SUPPLIERS']), str(m['MAIN SUPPLIERS'])].filter(Boolean);
+      if (cands.length) {
+        let hit = null, raw = '';
+        for (const c of cands) { const x = matcher(c); if (x) { hit = x; raw = c; break; } }
+        if (hit) { supplier = hit.name; supplierRaw = raw; supplierHow = hit.how; }
+        else { supplier = regName(cands[0]); supplierRaw = cands[0]; supplierHow = 'not in supplier file'; unmatchedSuppliers[supplier] = (unmatchedSuppliers[supplier] || 0) + 1; }
+        supplierSrc = 'Master';
+      }
+    }
+    fill.supplier[supplierSrc]++;
+
+    const wo = normWO(r['WorkOrder']);
+    const pk = packages.find(p => p.wo === wo);
+    const created = parseDate(r['Card Created Date']);
+    const printDate = str(r['Print Date']);
+    const o = {
+      site: str(r['Manufacturing Site Name']), name: str(r['Workmen']), ep, mobile: mobile || NA, area: str(r['Area of Movement']),
+      wo, eic: str(r['EIC']), cat: str(r['Card Category']), type: str(r['Card type']), status: str(r['Status']),
+      hr: str(r['HR Approval']), med: str(r['Medical']), saf: str(r['Safety']), vig: str(r['Vigilance']),
+      eicSt: str(r['EIC Status']), bribs: str(r['BRIBS']), approved: str(r['Card Approved']), printDate,
+      printD: parseDate(printDate), created,
+      aadhaar: aadhaar || NA, desig, supplier, supplierRaw, supplierHow, mobileSrc, aadhaarSrc, desigSrc, supplierSrc,
+      pkgId: pk ? pk.id : 'OTHER', pkgName: pk ? pk.name : 'Other / No WO',
+      trade: desig, inMaster: !!m
+    };
+    o.pending = STAGES.filter(s => !isDone(o[s[0]])).map(s => s[1]);
+    return o;
+  });
+  const excludedOtherWO = rows.filter(r => r.pkgId === 'OTHER').length;
+  const rowsKept = rows.filter(r => r.pkgId !== 'OTHER');
+  const tvcMap = inp.tvc && inp.tvc.length ? new Map(inp.tvc.map(r => [str(r['EP']), tvcNorm(r['TVC Status'])])) : null;
+  rowsKept.forEach(r => { r.tvc = tvcMap ? (tvcMap.get(r.ep) || 'TVC NA') : null; });
+  const shutEps = new Set(shut.map(r => str(r['EP Number'])));
+  const ctx = { packages, lines, prev: cfg.prev || null, totalReq: Number(cfg.totalReq) || 0 };
+  return { rows: rowsKept, ctx, fill, unmatchedSuppliers, counts: { excludedOtherWO, card: card.length, master: master.length, employee: emp.length, supplier: supp.length, shutdown: shut.length, masterNotInShutdown: master.filter(r => !shutEps.has(str(r['EP NO']))).length } };
+}
+
+/* ---------- summary tables (for any row subset) ---------- */
+function blank() { return { create: 0, hr: 0, med: 0, saf: 0, vig: 0, eic: 0, bribs: 0, approved: 0, print: 0, valid: 0, applied: 0 }; }
+function addTo(o, r) {
+  o.create++; if (isDone(r.hr)) o.hr++; if (isDone(r.med)) o.med++; if (isDone(r.saf)) o.saf++;
+  if (isDone(r.vig)) o.vig++; if (isDone(r.eicSt)) o.eic++; if (isDone(r.bribs)) o.bribs++;
+  if (up(r.approved) === 'APPROVED') o.approved++; if (r.printDate) o.print++;
+  if (up(r.status) === 'VALID') o.valid++; else if (up(r.status) === 'PRE_VERIFIED') o.applied++;
+}
+function groupAgg(rows, keyf, namef) {
+  const m = new Map();
+  rows.forEach(r => { const k = norm(keyf(r)); if (!m.has(k)) m.set(k, Object.assign(blank(), { name: namef(r) })); addTo(m.get(k), r); });
+  const out = [...m.values()]; out.forEach(o => { o.pendAppr = o.create - o.approved; });
+  return out;
+}
+function summarize(rows, ctx, opt) {
+  opt = opt || {}; const filtered = !!opt.filtered, commitOk = opt.commitOk !== false;
+  const withP = o => { o.pendAppr = o.create - o.approved; return o; };
+  let pk = ctx.packages.map(p => { const o = Object.assign(blank(), { id: p.id, name: p.name, wo: p.wo, req: p.req }); rows.filter(r => r.pkgId === p.id).forEach(r => addTo(o, r)); return withP(o); });
+  const other = Object.assign(blank(), { id: 'OTHER', name: 'Other / No WO', wo: '', req: 0 });
+  rows.filter(r => r.pkgId === 'OTHER').forEach(r => addTo(other, r)); withP(other);
+  let pkgRows = other.create ? pk.concat([other]) : pk.slice();
+  const reqOk = opt.reqOk !== false;
+  const pkReq = reqOk ? pkgRows.filter(p => !filtered || p.create > 0).reduce((a, p) => a + (p.req > 0 ? p.req : 0), 0) : 0;
+  const totalReq = reqOk ? (!filtered && ctx.totalReq > 0 ? ctx.totalReq : pkReq) : 0;
+  const hasReq = totalReq > 0, reqTotalOnly = hasReq && totalReq !== pkReq;
+  pkgRows.forEach(p => { const rq = reqOk && p.req > 0; if (!reqOk) p.req = 0; p.pendCreate = rq ? p.req - p.create : null; p.pendPrint = rq ? p.req - p.print : null; });
+  const tot = blank(); tot.req = 0;
+  pkgRows.forEach(p => { Object.keys(tot).forEach(k => { tot[k] += p[k] || 0; }); });
+  tot.req = totalReq;
+  tot.pendAppr = tot.create - tot.approved; tot.pendCreate = hasReq ? totalReq - tot.create : null; tot.pendPrint = hasReq ? totalReq - tot.print : null;
+  if (filtered) pkgRows = pkgRows.filter(p => p.create > 0);
+
+  // suppliers: every line of the supplier file + any other supplier name found in Master
+  const by = new Map(), rawBy = new Map();
+  rows.forEach(r => {
+    const k = norm(r.supplier);
+    if (!by.has(k)) by.set(k, Object.assign(blank(), { name: r.supplier })); addTo(by.get(k), r);
+    if (r.supplierRaw) { if (!rawBy.has(k)) rawBy.set(k, new Set()); rawBy.get(k).add(r.supplierRaw); }
+  });
+  const used = new Set(); let sup = [];
+  ctx.lines.forEach(l => {
+    const k = norm(l.name); const c = by.get(k) || blank(); used.add(k);
+    sup.push(Object.assign({}, c, { name: l.name, remarks: l.remarks, manpower: commitOk ? l.manpower : null, extra: false, qaLine: isQA(l.remarks) || isSafety(l.remarks), master: rawBy.has(k) ? [...rawBy.get(k)].join(', ') : '' }));
+  });
+  [...by.keys()].filter(k => !used.has(k)).sort((a, b) => by.get(b).create - by.get(a).create).forEach(k => {
+    const n = by.get(k).name;
+    sup.push(Object.assign({}, by.get(k), { remarks: n === NA ? 'Worker not in Master, or no supplier in Master' : 'Not in supplier file', manpower: null, extra: true, qaLine: false, master: rawBy.has(k) ? [...rawBy.get(k)].join(', ') : '' }));
+  });
+  sup.forEach(s => { s.pendAppr = s.create - s.approved; s.pending = s.manpower == null ? null : s.manpower - s.create; });
+  if (filtered) sup = sup.filter(s => s.create > 0);
+  const supTot = Object.assign(blank(), { manpower: 0, pending: 0 });
+  sup.forEach(s => { Object.keys(blank()).forEach(k => { supTot[k] += s[k]; }); supTot.manpower += s.manpower || 0; supTot.pending += s.pending || 0; });
+  supTot.pendAppr = supTot.create - supTot.approved; supTot.commitOk = commitOk;
+
+  // QA/QC and Safety Supervisor workers: supplier exactly as per Master
+  const qaRows = rows.filter(r => isQA(r.desig) || isSafety(r.desig));
+  const qaBy = new Map();
+  qaRows.forEach(r => {
+    const k = norm(r.supplier + '|' + (r.supplierRaw || ''));
+    if (!qaBy.has(k)) qaBy.set(k, { supplier: r.supplier, master: r.supplierRaw, qaCreate: 0, qaPrint: 0, safCreate: 0, safPrint: 0, names: [] });
+    const o = qaBy.get(k);
+    if (isQA(r.desig)) { o.qaCreate++; if (r.printDate) o.qaPrint++; } else { o.safCreate++; if (r.printDate) o.safPrint++; }
+    o.names.push(r.name);
+  });
+  const qa = [...qaBy.values()].sort((a, b) => (b.qaCreate + b.safCreate) - (a.qaCreate + a.safCreate));
+  const qaLines = ctx.lines.filter(l => isQA(l.remarks) || isSafety(l.remarks));
+
+  // trades (exactly the designation shown in Sheet_1)
+  const trades = groupAgg(rows, r => r.desig, r => r.desig).sort((a, b) => b.create - a.create);
+  const tradePk = {}, tradeCr = {};
+  rows.forEach(r => { const k = norm(r.desig); tradePk[k] = tradePk[k] || {}; tradeCr[k] = tradeCr[k] || {}; tradePk[k][r.pkgId] = (tradePk[k][r.pkgId] || 0) + (r.printDate ? 1 : 0); tradeCr[k][r.pkgId] = (tradeCr[k][r.pkgId] || 0) + 1; });
+  trades.forEach(t => { t.printByPkg = tradePk[norm(t.name)] || {}; t.createByPkg = tradeCr[norm(t.name)] || {}; });
+  const eic = groupAgg(rows, r => r.eic, r => r.eic || '(blank)').sort((a, b) => b.create - a.create);
+
+  // stage table, daily, waiting time
+  const stage = [['HR Approval', tot.hr], ['Medical', tot.med], ['Safety', tot.saf], ['Vigilance', tot.vig], ['EIC Status', tot.eic], ['BRIBS', tot.bribs]]
+    .map(a => ({ stage: a[0], done: a[1], pending: tot.create - a[1] }));
+  const dm = new Map();
+  rows.forEach(r => {
+    if (!r.created) return; const k = dayKey(r.created);
+    if (!dm.has(k)) dm.set(k, { day: k, created: 0, valid: 0, applied: 0 });
+    const o = dm.get(k); o.created++; if (up(r.status) === 'VALID') o.valid++; else if (up(r.status) === 'PRE_VERIFIED') o.applied++;
+  });
+  const daily = [...dm.values()].sort((a, b) => a.day < b.day ? 1 : -1);
+  const bk = [['0 to 1 day', 0, 1], ['2 to 3 days', 2, 3], ['4 to 7 days', 4, 7], ['8 to 14 days', 8, 14], ['15 days or more', 15, 99999]];
+  const pend = rows.filter(r => up(r.status) === 'PRE_VERIFIED');
+  const age = bk.map(b => ({ bucket: b[0], count: pend.filter(r => r.age != null && r.age >= b[1] && r.age <= b[2]).length }));
+  age.push({ bucket: 'Created date not available', count: pend.filter(r => r.age == null).length });
+
+  const prev = ctx.prev;
+  const totalsArr = [tot.create, tot.hr, tot.med, tot.saf, tot.vig, tot.eic, tot.bribs, tot.print, tot.pendCreate, tot.pendPrint];
+  const diff = prev ? prev.map((p, i) => (totalsArr[i] == null || p == null ? null : p - totalsArr[i])) : null;
+  const statusPending = [tot.hr, tot.med, tot.saf, tot.vig, tot.eic, tot.bribs, tot.print].map(v => tot.create - v);
+  return { pk: pkgRows, tot, hasReq, reqTotalOnly, sup, supTot, qa, qaLines, trades, eic, stage, daily, age, prev, diff, statusPending, totalsArr };
+}
+
+/* ---------- Excel writer ---------- */
+const HEAD = ['Manufacturing Site Name', 'Workmen', 'EP Number', 'Mobile No', 'Area of Movement', 'WorkOrder', 'EIC', 'Card Category', 'Card type',
+  'Status', 'HR Approval', 'Medical', 'Safety', 'Vigilance', 'EIC Status', 'BRIBS', 'Card Approved', 'Print Date', 'Aadhar No', 'DESIGNATION', 'SUPPLIERS'];
+const WIDTH = [10, 30, 15, 14, 18, 13, 18, 12, 12, 14, 11, 10, 10, 11, 11, 10, 13, 12, 16, 28, 18];
+const C = { ink: 'FF1E1B4B', head: 'FF4338CA', head2: 'FF7C3AED', warn: 'FFFFEDD5', warnTx: 'FF9A3412', ok: 'FFDCFCE7', total: 'FFE0E7FF', line: 'FFD4D4D8' };
+const thin = { style: 'thin', color: { argb: C.line } };
+const BORDER = { top: thin, left: thin, bottom: thin, right: thin };
+function hdr(cell, argb) { cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argb || C.head } }; cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; cell.border = BORDER; }
+function body(cell, o) { o = o || {}; cell.border = BORDER; if (o.bold) cell.font = { bold: true }; if (o.fill) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: o.fill } }; if (o.center) cell.alignment = { horizontal: 'center' }; }
+
+function buildWorkbook(ExcelJS, res, sum) {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Shutdown Card Tracker';
+  /* Sheet_1: details */
+  const ws = wb.addWorksheet('Sheet_1', { views: [{ state: 'frozen', ySplit: 1, xSplit: 3 }] });
+  ws.addRow(HEAD);
+  HEAD.forEach((h, i) => { hdr(ws.getCell(1, i + 1)); ws.getColumn(i + 1).width = WIDTH[i]; });
+  ws.getRow(1).height = 24;
+  res.rows.forEach(r => {
+    const row = ws.addRow([r.site, r.name, r.ep, r.mobile, r.area, r.wo, r.eic, r.cat, r.type, r.status, r.hr, r.med, r.saf, r.vig, r.eicSt, r.bribs, r.approved, r.printDate, r.aadhaar, r.desig, r.supplier]);
+    row.eachCell({ includeEmpty: true }, (c, i) => {
+      c.numFmt = '@';
+      const v = String(c.value || '');
+      if (v === NA) { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.warn } }; c.font = { color: { argb: C.warnTx } }; }
+      else if (v === 'Not Done' || v === 'Pending') { c.font = { color: { argb: C.warnTx } }; }
+    });
+  });
+  ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1 + res.rows.length, column: HEAD.length } };
+
+  /* Sheet1: summary */
+  const s = wb.addWorksheet('Sheet1');
+  const H1 = ['Sr.No', 'Shutdown Package', 'WO', 'REQ', 'CREATE', 'HR Approval', 'Medical', 'Safety', 'Vigilance', 'EIC Status', 'BRIBS', 'PRINT', 'PENDING CREATE', 'PENDING PRINT'];
+  H1.forEach((h, i) => { s.getCell(1, i + 1).value = h; hdr(s.getCell(1, i + 1)); });
+  s.getRow(1).height = 30;
+  const pk = sum.pk;
+  for (let i = 0; i < 5; i++) {
+    const r = 2 + i, p = pk[i];
+    s.getCell(r, 1).value = i === 0 ? 1 : { formula: 'A' + (r - 1) + '+1', result: i + 1 };
+    if (p) {
+      s.getCell(r, 2).value = p.name; if (p.wo) s.getCell(r, 3).value = p.wo; if (sum.hasReq && p.req) s.getCell(r, 4).value = p.req;
+      [p.create, p.hr, p.med, p.saf, p.vig, p.eic, p.bribs, p.print].forEach((v, j) => { s.getCell(r, 5 + j).value = v; });
+    }
+    if (sum.hasReq && p && p.req) {
+      s.getCell(r, 13).value = { formula: 'D' + r + '-E' + r, result: p.pendCreate };
+      s.getCell(r, 14).value = { formula: 'D' + r + '-L' + r, result: p.pendPrint };
+    }
+    for (let c = 1; c <= 14; c++) body(s.getCell(r, c), { center: c !== 2 });
+  }
+  const tv = [sum.tot.req, ...sum.totalsArr.slice(0, 8), sum.tot.pendCreate, sum.tot.pendPrint];
+  s.getCell('B7').value = 'TOTAL';
+  'DEFGHIJKLMN'.split('').forEach((c, i) => { if (!sum.hasReq && (c === 'D' || c === 'M' || c === 'N')) return; s.getCell(c + '7').value = { formula: 'SUM(' + c + '2:' + c + '6)', result: tv[i] }; });
+  if (sum.reqTotalOnly) { s.getCell('D7').value = sum.tot.req; s.getCell('M7').value = { formula: 'D7-E7', result: sum.tot.pendCreate }; s.getCell('N7').value = { formula: 'D7-L7', result: sum.tot.pendPrint }; }
+  for (let c = 1; c <= 14; c++) body(s.getCell(7, c), { bold: true, fill: C.total, center: c !== 2 });
+  s.getCell('B8').value = 'PREVIOUS DATA';
+  s.getCell('B9').value = 'DIFF';
+  s.mergeCells('B7:C7'); s.mergeCells('B8:C8'); s.mergeCells('B9:C9'); s.mergeCells('B10:C10');
+  'EFGHIJKLMN'.split('').forEach((c, i) => {
+    if (sum.prev && sum.prev[i] != null && (sum.hasReq || !'MN'.includes(c))) { s.getCell(c + '8').value = sum.prev[i]; s.getCell(c + '9').value = { formula: c + '8-' + c + '7', result: sum.diff[i] }; }
+  });
+  s.getCell('B10').value = 'Status Pending';
+  'FGHIJKL'.split('').forEach((c, i) => { s.getCell(c + '10').value = { formula: '$E$7-' + c + '7', result: sum.statusPending[i] }; });
+  for (let r = 8; r <= 10; r++) for (let c = 1; c <= 14; c++) body(s.getCell(r, c), { bold: c === 2, center: c !== 2, fill: r === 10 && c > 5 && c < 13 ? C.warn : undefined });
+
+  /* supplier table */
+  ['SUPPLIER', 'REMARKS', 'Manpower', 'Create', 'Print', 'Pending'].forEach((h, i) => { s.getCell(13, 2 + i).value = h; hdr(s.getCell(13, 2 + i), C.head2); });
+  let r = 14;
+  sum.sup.forEach(x => {
+    s.getCell(r, 2).value = x.name; s.getCell(r, 3).value = x.remarks;
+    if (x.manpower != null) s.getCell(r, 4).value = x.manpower;
+    s.getCell(r, 5).value = x.create; s.getCell(r, 6).value = x.print;
+    if (x.manpower != null) s.getCell(r, 7).value = { formula: 'D' + r + '-F' + r, result: x.pending };
+    for (let c = 2; c <= 7; c++) body(s.getCell(r, c), { center: c > 3, fill: x.extra ? C.warn : undefined });
+    r++;
+  });
+  s.getCell(r, 2).value = 'Total';
+  [['D', 'manpower'], ['E', 'create'], ['F', 'print'], ['G', 'pending']].forEach(([c, k]) => { s.getCell(c + r).value = { formula: 'SUM(' + c + '14:' + c + (r - 1) + ')', result: sum.supTot[k] }; });
+  for (let c = 2; c <= 7; c++) body(s.getCell(r, c), { bold: true, fill: C.total, center: c > 3 });
+
+  /* trade table (designation exactly as shown in Sheet_1); one CREATED and one PRINT column per package */
+  const n = PIVOT_ORDER.length, cC = 10, cTC = 10 + n, cP = 11 + n, cTP = 11 + 2 * n, lastC = cTP;
+  const L = k => { let t = '', x = k; while (x > 0) { const m = (x - 1) % 26; t = String.fromCharCode(65 + m) + t; x = Math.floor((x - 1) / 26); } return t; };
+  const WOS = PIVOT_ORDER.map(id => (sum.pk.find(p => p.id === id) || {}).wo || '');
+  PIVOT_ORDER.forEach((id, i) => { s.getCell(13, cC + i).value = WOS[i]; s.getCell(13, cP + i).value = WOS[i]; });
+  s.getCell('I13').value = 'WO';
+  const nm = id => (sum.pk.find(p => p.id === id) || {}).name || id;
+  const H3 = ['Row Labels', ...PIVOT_ORDER.map(id => 'CREATED ' + nm(id)), 'Total created', ...PIVOT_ORDER.map(() => 'PRINT'), 'Total printed'];
+  H3.forEach((h, i) => { s.getCell(14, 9 + i).value = h; hdr(s.getCell(14, 9 + i), C.head2); });
+  s.getRow(14).height = 42;
+  r = 15; const r0 = r;
+  sum.trades.forEach(t => {
+    s.getCell(r, 9).value = t.name;
+    let tc = 0, tp = 0;
+    PIVOT_ORDER.forEach((id, i) => { const cc = t.createByPkg[id] || 0, p2 = t.printByPkg[id] || 0; tc += cc; tp += p2; s.getCell(r, cC + i).value = cc; s.getCell(r, cP + i).value = p2; });
+    s.getCell(r, cTC).value = { formula: 'SUM(' + L(cC) + r + ':' + L(cTC - 1) + r + ')', result: tc };
+    s.getCell(r, cTP).value = { formula: 'SUM(' + L(cP) + r + ':' + L(cTP - 1) + r + ')', result: tp };
+    for (let cc = 9; cc <= lastC; cc++) body(s.getCell(r, cc), { center: cc > 9, fill: t.name === NA ? C.warn : undefined });
+    r++;
+  });
+  s.getCell(r, 9).value = 'Grand Total';
+  const gs = (f) => sum.trades.reduce((a, t) => a + f(t), 0);
+  PIVOT_ORDER.forEach((id, i) => {
+    const c1 = L(cC + i), c2 = L(cP + i);
+    s.getCell(c1 + r).value = { formula: 'SUM(' + c1 + r0 + ':' + c1 + (r - 1) + ')', result: gs(t => t.createByPkg[id] || 0) };
+    s.getCell(c2 + r).value = { formula: 'SUM(' + c2 + r0 + ':' + c2 + (r - 1) + ')', result: gs(t => t.printByPkg[id] || 0) };
+  });
+  s.getCell(L(cTC) + r).value = { formula: 'SUM(' + L(cTC) + r0 + ':' + L(cTC) + (r - 1) + ')', result: gs(t => PIVOT_ORDER.reduce((a, id) => a + (t.createByPkg[id] || 0), 0)) };
+  s.getCell(L(cTP) + r).value = { formula: 'SUM(' + L(cTP) + r0 + ':' + L(cTP) + (r - 1) + ')', result: gs(t => PIVOT_ORDER.reduce((a, id) => a + (t.printByPkg[id] || 0), 0)) };
+  for (let cc = 9; cc <= lastC; cc++) body(s.getCell(r, cc), { bold: true, fill: C.total, center: cc > 9 });
+  [6, 34, 16, 9, 9, 11, 9, 9, 40].forEach((w, i) => { s.getColumn(i + 1).width = w; });
+  for (let cc = 10; cc <= lastC; cc++) s.getColumn(cc).width = 13;
+  s.getColumn(2).width = 34; s.getColumn(3).width = 30; s.getColumn(9).width = 38;
+  s.views = [{ state: 'frozen', ySplit: 1 }];
+  return wb;
+}
+
+/* pending list workbook */
+function buildSupplierWorkbook(ExcelJS, sum, rows) {
+  const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Supplier status');
+  const H = ['Supplier', 'Remarks', 'Committed', 'Cards created', 'HR Approval', 'Medical', 'Safety', 'Vigilance', 'EIC Status', 'BRIBS', 'Valid', 'Applied', 'Committed - created'];
+  ws.addRow(H); H.forEach((h, i) => hdr(ws.getCell(1, i + 1)));
+  ws.getRow(1).height = 30; ws.getColumn(1).width = 26; ws.getColumn(2).width = 30; for (let i = 3; i <= H.length; i++) ws.getColumn(i).width = 12;
+  const t = { man: 0, any: false };
+  sum.sup.forEach((s, i) => {
+    const r = ws.addRow([s.name, s.remarks || '', s.manpower == null ? '' : s.manpower, s.create, s.hr, s.med, s.saf, s.vig, s.eic, s.bribs, s.valid, s.applied, s.pending == null ? '' : s.pending]);
+    r.eachCell({ includeEmpty: true }, (cl, ci) => { cl.border = BORDER; if (ci > 2) cl.alignment = { horizontal: 'center' }; });
+  });
+  const n = sum.sup.length, last = n + 1, tr = ws.addRow(['TOTAL', '']);
+  for (let ci = 3; ci <= H.length; ci++) {
+    const L = ws.getColumn(ci).letter; let v = 0; for (let k = 2; k <= last; k++) v += Number(ws.getCell(L + k).value) || 0;
+    tr.getCell(ci).value = { formula: 'SUM(' + L + '2:' + L + last + ')', result: v };
+  }
+  tr.eachCell({ includeEmpty: true }, (cl, ci) => { cl.font = { bold: true }; cl.border = BORDER; cl.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.total } }; if (ci > 2) cl.alignment = { horizontal: 'center' }; });
+  ws.views = [{ state: 'frozen', ySplit: 1, xSplit: 1 }];
+  const w2 = wb.addWorksheet('Cards');
+  const H2 = ['Supplier', 'EP Number', 'Workmen', 'Mobile No', 'Designation', 'WorkOrder', 'Package', 'Card Status', 'TVC Status', 'Days Waiting', 'Pending Stages'];
+  w2.addRow(H2); H2.forEach((h, i) => hdr(w2.getCell(1, i + 1)));
+  [24, 14, 26, 14, 26, 13, 30, 14, 12, 12, 50].forEach((w, i) => { w2.getColumn(i + 1).width = w; });
+  rows.slice().sort((a, b) => String(a.supplier).localeCompare(b.supplier) || String(a.name).localeCompare(b.name)).forEach(r => w2.addRow([r.supplier, r.ep, r.name, r.mobile, r.desig, r.wo, r.pkgName, cardStatus(r), r.tvc || '', r.age == null ? '' : r.age, r.pending.join(', ')]));
+  w2.views = [{ state: 'frozen', ySplit: 1 }];
+  w2.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1 + rows.length, column: H2.length } };
+  return wb;
+}
+function cardStatus(r) { const s = up(r.status); return s === 'PRE_VERIFIED' ? 'Applied' : s === 'VALID' ? 'Valid' : r.status; }
+
+function buildTvcWorkbook(ExcelJS, rows) {
+  const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('TVC Status');
+  const H = ['EP Number', 'Name', 'Trade', 'Supplier', 'TVC Status'];
+  ws.addRow(H); H.forEach((h, i) => hdr(ws.getCell(1, i + 1)));
+  [16, 30, 28, 22, 14].forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+  rows.forEach(r => { const row = ws.addRow([r.ep, r.name, r.desig, r.supplier, r.tvc || '']); const cl = row.getCell(5);
+    if (r.tvc === 'Fail') { cl.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } }; cl.font = { color: { argb: 'FFB91C1C' }, bold: true }; }
+    else if (r.tvc === 'Pass') { cl.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.ok } }; }
+    else if (r.tvc === 'TVC NA') { cl.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.warn } }; } });
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+  ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1 + rows.length, column: H.length } };
+  return wb;
+}
+function buildPendingWorkbook(ExcelJS, rows) {
+  const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Pending');
+  const H = ['EP Number', 'Workmen', 'Mobile No', 'Supplier', 'Designation', 'WorkOrder', 'Card Status', 'TVC Status', 'Created On', 'Days Waiting', 'Pending Stages'];
+  ws.addRow(H); H.forEach((h, i) => hdr(ws.getCell(1, i + 1)));
+  [15, 28, 14, 18, 26, 13, 14, 12, 12, 12, 50].forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+  rows.forEach(r => ws.addRow([r.ep, r.name, r.mobile, r.supplier, r.desig, r.wo, cardStatus(r), r.tvc || '', r.created ? fmtDMY(r.created) : '', r.age == null ? '' : r.age, r.pending.join(', ')]));
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+  ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1 + rows.length, column: H.length } };
+  return wb;
+}
+
+g.ShutCore = { NA, SPECS, str, prim, norm, readCard, readMaster, readEmployee, readSupplier, readPrevious, readTvc, buildTvcWorkbook, process, summarize, buildWorkbook, buildPendingWorkbook, buildSupplierWorkbook, cardStatus,
+  DEFAULT_PACKAGES, DEFAULT_TRADES, DEFAULT_ALIASES, aliasText, parseAliases, STAGES, isDone, fmtDMY, dayKey, PIVOT_ORDER };
+if (typeof module !== 'undefined') module.exports = g.ShutCore;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function(){
+'use strict';
+const Core = window.ShutCore, NA = Core.NA;
+const dispName = n => { n = String(n).replace(/^[0-9a-f]{8}-/i, ''); return n.length > 38 ? n.slice(0, 35) + '…' : n; };
+const norm2 = s => String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]/g, '');
+const up = s => String(s == null ? '' : s).trim().toUpperCase();
+const $ = (s, r) => (r || document).querySelector(s);
+const el = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = n => (n == null || isNaN(n)) ? '–' : Math.round(n).toLocaleString('en-IN');
+const sgn = n => n === 0 || isNaN(n) ? '0' : (n > 0 ? '+' : '−') + fmt(Math.abs(n));
+const pct = (a, b) => b ? Math.round(a * 100 / b) + '%' : '–';
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+
+/* ---------- state ---------- */
+const FILES = [
+  { id: 'card', n: '1', t: 'Card Status report', s: 'Click or drag the .xlsx file here', read: Core.readCard },
+  { id: 'master', n: '2', t: 'Shutdown master sheet', s: 'Click or drag the .xlsx file here', read: Core.readMaster },
+  { id: 'employee', n: '3', t: 'Employee ID list', s: 'Click or drag the .xlsx file here', read: Core.readEmployee },
+  { id: 'supplier', n: '4', t: 'Supplier manpower', s: 'Click or drag the .xlsx file here', read: Core.readSupplier },
+  { id: 'tvc', n: 'Optional', t: 'TVC status', s: 'Optional · EP and TVC result', read: Core.readTvc, opt: true },
+  { id: 'prev', n: 'Optional', t: 'Last update', s: 'Optional · package-wise approvals table', read: Core.readPrevious, opt: true }
+];
+FILES.forEach(f => { f.req = !f.opt; });
+const IDLE_TXT = 'Upload the four source files to generate the report. All processing is done locally in your browser; no data is sent anywhere.';
+const fmtTime = iso => { const d = new Date(iso); return isNaN(d) ? '' : Core.fmtDMY(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const S = { data: {}, names: {}, res: null, cfg: null, tab: 'overview', filt: { pkg: '', sup: '' }, charts: {}, asOf: null, times: {} };
+S.cfg = {
+  totalReq: store.get('sct_totreq2') != null ? Number(store.get('sct_totreq2')) : 2089,
+  packages: JSON.parse(store.get('sct_pk4') || 'null') || Core.DEFAULT_PACKAGES.map(p => Object.assign({}, p)),
+  aliasText: store.get('sct_alias3') || ''
+};
+
+/* ---------- uploads ---------- */
+const upEl = $('#uploads');
+function chipsHtml(f, check) {
+  const sp = Core.SPECS[f.id];
+  if (f.id === 'prev') {
+    const items = check ? check.items : sp.parts.map(p => ({ key: p, lvl: 'req' }));
+    return '<div class="lh">Must contain</div>' + items.map(i => '<span class="chip ' + (check ? (i.found ? 'ok' : 'bad') : 'req') + '">' + esc(i.key) + '</span>').join('');
+  }
+  const items = check ? check.items : sp.cols.map(c => ({ key: c.k, lvl: c.lvl, eff: c.eff }));
+  return '<div class="lh">Columns read from this file</div>' + items.map(i => {
+    const cls = check ? (i.found ? 'ok' : (i.lvl === 'req' ? 'bad' : 'warn')) : (i.lvl === 'req' ? 'req' : 'opt');
+    const tip = !check ? (i.lvl === 'req' ? 'Required' : 'Optional: ' + (i.eff ? 'if missing, ' + i.eff : '')) : (i.found ? 'Found' : (i.lvl === 'req' ? 'REQUIRED column not found' : 'Not found: ' + i.eff));
+    return '<span class="chip ' + cls + '" title="' + esc(tip) + '">' + esc(i.key) + '</span>';
+  }).join('');
+}
+function checkLine(f, check) {
+  if (!check) return '';
+  const miss = check.items.filter(i => !i.found);
+  const bad = miss.filter(i => i.lvl === 'req'), warn = miss.filter(i => i.lvl !== 'req');
+  let h = '';
+  if (bad.length) h += '<div class="chk badt">✗ Missing required: ' + bad.map(i => esc(i.key)).join(', ') + '. Add it and upload again.</div>';
+  else if (f.id === 'prev') h += '<div class="chk good">✓ Found sheet "' + esc(check.sheet) + '" with totals, package and trade tables</div>';
+  else h += '<div class="chk good">✓ Sheet "' + esc(check.sheet) + '", header on row ' + check.headerRow + ' · ' + fmt(check.rows) + ' rows' + (check.extra ? ' · ' + fmt(check.extra) + ' other columns ignored' : '') + '</div>';
+  if (warn.length) h += '<div class="chk warnt">⚠ Not found: ' + warn.map(i => esc(i.key) + ' (' + esc(i.eff) + ')').join('; ') + '</div>';
+  return h;
+}
+function paintBox(f, check) { $('#cols-' + f.id).innerHTML = chipsHtml(f, check) + checkLine(f, check); }
+FILES.forEach(f => {
+  const d = el('<div class="upbox"><label class="drop" id="drop-' + f.id + '"><div class="n">' + (f.opt ? f.n : 'File ' + f.n) + '</div><div class="t">' + f.t + '</div><div class="s" id="st-' + f.id + '">' + esc(f.s) + '</div><input type="file" accept=".xlsx,.xlsm"></label><button class="btn line xrm hide" id="rm-' + f.id + '" style="align-self:center;padding:3px 10px;font-size:11px">✕ Remove this file</button><div class="cols" id="cols-' + f.id + '"></div></div>');
+  upEl.appendChild(d); paintBox(f, null);
+  const dr = $('.drop', d), inp = $('input', d);
+  inp.addEventListener('change', () => { if (inp.files[0]) load(f, inp.files[0]); inp.value = ''; });
+  ['dragenter', 'dragover'].forEach(e => dr.addEventListener(e, ev => { ev.preventDefault(); dr.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(e => dr.addEventListener(e, ev => { ev.preventDefault(); dr.classList.remove('over'); }));
+  dr.addEventListener('drop', ev => { const fl = ev.dataTransfer.files[0]; if (fl) load(f, fl); });
+  $('#rm-' + f.id).addEventListener('click', () => { clearFile(f.id); recompute(); collapseUploads(false); setMsg(f.t + ' removed. ' + (S.res ? 'The report now uses the remaining files.' : 'Upload it again to continue.')); });
+});
+const hhmm = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+function clearFile(id) {
+  const f = FILES.find(x => x.id === id);
+  delete S.data[id]; delete S.names[id]; delete S.times[id];
+  const box = $('#drop-' + id); box.className = 'drop'; $('#st-' + id).textContent = f.s; $('#st-' + id).title = ''; $('#rm-' + id).classList.add('hide'); paintBox(f, null);
+}
+function resetAll() { FILES.forEach(f => clearFile(f.id)); recompute(); collapseUploads(false); setMsg('All files removed. Upload the four source files to start again.'); }
+function collapseUploads(on) {
+  $('#upbody').classList.toggle('hide', on); $('#upbar').classList.toggle('hide', !on);
+  $('#upToggle').textContent = 'View / replace files';
+  if (on) $('#upsum').textContent = !FILES.some(f => S.names[f.id]) ? (S.published ? 'No files uploaded in this session. Showing the published data. Upload new files to prepare an update.' : 'No files uploaded.') : '✓ Files in use: ' + FILES.filter(f => S.names[f.id]).map(f => f.t + ' = ' + dispName(S.names[f.id]) + ' (' + hhmm(S.times[f.id]) + ')').join(' · ');
+}
+$('#upToggle').addEventListener('click', () => collapseUploads(false));
+$('#resetAll').addEventListener('click', resetAll); $('#resetAll2').addEventListener('click', resetAll);
+function setMsg(t, bad) { const m = $('#msg'); m.textContent = t; m.className = 'msg' + (bad ? ' bad' : ''); }
+async function load(f, file) {
+  const box = $('#drop-' + f.id), st = $('#st-' + f.id);
+  box.className = 'drop'; st.textContent = 'Reading file…';
+  try {
+    const buf = await file.arrayBuffer();
+    const out = await f.read(window.ExcelJS, buf);
+    paintBox(f, out.check);
+    if (out.check.fatal.length) throw new Error(f.t + ': required ' + (f.id === 'prev' ? 'part' : 'column') + (out.check.fatal.length > 1 ? 's' : '') + ' not found: ' + out.check.fatal.join(', ') + '. Please check the file and upload it again.');
+    S.data[f.id] = f.id === 'prev' ? out : out.rows; S.names[f.id] = file.name; S.times[f.id] = new Date();
+    box.className = 'drop ok'; st.textContent = '✓ ' + dispName(file.name) + ' · uploaded ' + hhmm(S.times[f.id]); st.title = file.name; $('#rm-' + f.id).classList.remove('hide');
+    const warn = out.check.items.filter(i => !i.found);
+    setMsg(dispName(file.name) + ' loaded.' + (warn.length ? ' Note: ' + warn.map(i => i.key + ' not found (' + i.eff + ')').join('; ') + '.' : ''));
+    recompute();
+  } catch (e) {
+    const keep = S.names[f.id] ? ' The previously loaded file (' + dispName(S.names[f.id]) + ') is still in use.' : '';
+    box.className = 'drop err'; st.textContent = (e.message || String(e)) + keep; collapseUploads(false);
+    setMsg((e.message || String(e)) + keep, true);
+  }
+}
+function recompute() {
+  const d = S.data;
+  if (!(d.card && d.master && d.employee && d.supplier)) {
+    const miss = FILES.filter(f => f.req && !d[f.id]).length; setMsg('Waiting for ' + miss + ' more required file' + (miss > 1 ? 's' : '') + '.');
+    S.dirty = false;
+    if (S.published) { showPublished(); return; }
+    S.res = null; $('#app').classList.add('hide'); $('#dlExcel').disabled = true; $('#asof').textContent = IDLE_TXT; pubUi(); return;
+  }
+  const cfg = { packages: S.cfg.packages.map(p => Object.assign({}, p)), aliasText: S.cfg.aliasText, totalReq: S.cfg.totalReq };
+  if (d.prev) {
+    cfg.prev = d.prev.totals;
+    const nk = x => String(x).toLowerCase().replace(/[^a-z0-9]/g, '');
+    cfg.packages.forEach(p => { if (p.req) return; const m = d.prev.packages.find(x => x.wo && x.wo === p.wo) || d.prev.packages.find(x => nk(x.name) === nk(p.name)); if (m && m.req > 0) p.req = m.req; });
+  }
+  try {
+    S.res = Core.process({ card: d.card, master: d.master, employee: d.employee, supplier: d.supplier, tvc: d.tvc }, cfg);
+  } catch (e) { setMsg('The report could not be generated: ' + e.message, true); return; }
+  S.src = 'local'; S.dirty = true;
+  present();
+  setMsg('Report generated: ' + S.res.rows.length + ' shutdown cards processed. Use the tabs to review, or download the Excel report.');
+  collapseUploads(true); pubUi();
+}
+function present() {
+  // reference date = latest card activity in the data
+  let mx = 0; S.res.rows.forEach(r => { [r.created, r.printD].forEach(x => { if (x && +x > mx) mx = +x; }); });
+  S.asOf = mx ? new Date(mx) : new Date();
+  S.res.rows.forEach(r => { r.age = r.created ? Math.max(0, Math.floor((+S.asOf - +r.created) / 864e5)) : null; });
+  $('#asof').textContent = 'Report as of ' + Core.fmtDMY(S.asOf) + ' · ' + S.res.rows.length + ' shutdown cards · ' + S.res.counts.master + ' workers in master' + (S.src === 'published' && S.published ? ' · Published ' + fmtTime(S.published.meta.at) : '');
+  $('#app').classList.remove('hide'); $('#dlExcel').disabled = false;
+  buildFilters(); render();
+}
+function showPublished() {
+  S.res = S.published.res; S.src = 'published'; present(); pubUi();
+  if (S.canPublish) { collapseUploads(true); }
+}
+
+/* ---------- filters (every table obeys the selection; options narrow each other) ---------- */
+const DIMS = [['pkg', 'fPkg', 'pkgName'], ['sup', 'fSup', 'supplier']];
+const sel = r => DIMS.every(d => !S.filt[d[0]] || r[d[2]] === S.filt[d[0]]);
+function buildFilters() {
+  DIMS.forEach(d => {
+    const others = S.res.rows.filter(r => DIMS.every(o => o === d || !S.filt[o[0]] || r[o[2]] === S.filt[o[0]]));
+    const list = [...new Set(others.map(r => r[d[2]]))].sort();
+    if (S.filt[d[0]] && !list.includes(S.filt[d[0]])) S.filt[d[0]] = '';
+    const el2 = $('#' + d[1]); el2.innerHTML = '<option value="">All</option>' + list.map(v => '<option' + (v === S.filt[d[0]] ? ' selected' : '') + '>' + esc(v) + '</option>').join('');
+  });
+}
+DIMS.forEach(d => $('#' + d[1]).addEventListener('change', e => { S.filt[d[0]] = e.target.value; buildFilters(); render(); }));
+$('#fReset').addEventListener('click', () => { S.filt = { pkg: '', sup: '' }; buildFilters(); render(); });
+const filtActive = () => !!(S.filt.pkg || S.filt.sup);
+const rows = () => S.res.rows.filter(sel);
+
+/* ---------- tabs ---------- */
+const TABS = [['overview', 'Overview'], ['packages', 'Packages'], ['suppliers', 'Suppliers'], ['trades', 'Trades'], ['tvc', 'TVC Status'], ['pending', 'Cards Tracker'], ['settings', 'Settings']];
+function renderTabs() { $('#tabs').innerHTML = TABS.filter(t => t[0] !== 'settings' || S.role === 'local' || S.role === 'editor').map(t => '<button class="tab" data-t="' + t[0] + '">' + t[1] + '</button>').join(''); }
+renderTabs();
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) { S.tab = b.dataset.t; render(); } });
+$('#theme').addEventListener('click', () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; $('#theme').textContent = document.documentElement.dataset.theme === 'dark' ? 'Light mode' : 'Dark mode'; });
+
+/* ---------- table helper ---------- */
+function table(host, cols, data, o) {
+  o = o || {}; let sk = o.sort, dir = o.dir || -1, page = 0; const per = o.per || 0;
+  const wrap = document.createElement('div'); host.appendChild(wrap);
+  function draw() {
+    let d = data.slice();
+    if (sk != null) { const c = cols[sk]; d.sort((a, b) => { const x = c.v(a), y = c.v(b); return (x > y ? 1 : x < y ? -1 : 0) * dir; }); }
+    const tot = d.length; if (per) d = d.slice(page * per, page * per + per);
+    const foot = o.foot ? '<tfoot><tr>' + cols.map((c, i) => '<td class="' + (c.num ? 'num' : '') + '">' + (o.foot[i] == null ? '' : o.foot[i]) + '</td>').join('') + '</tr></tfoot>' : '';
+    wrap.innerHTML = '<div class="tw' + (o.cls ? ' ' + o.cls : '') + '"' + (o.maxh ? ' style="max-height:' + o.maxh + 'px"' : '') + '><table><thead><tr>' + cols.map((c, i) => '<th class="' + (c.num ? 'num' : '') + '" data-i="' + i + '">' + c.h + (sk === i ? (dir > 0 ? ' ▲' : ' ▼') : '') + '</th>').join('') + '</tr></thead><tbody>' +
+      (d.length ? d.map(r => '<tr>' + cols.map(c => '<td class="' + (c.num ? 'num' : '') + '">' + (c.r ? c.r(r) : esc(c.num ? fmt(c.v(r)) : c.v(r))) + '</td>').join('') + '</tr>').join('') : '<tr><td colspan="' + cols.length + '" class="empty">No data for this selection</td></tr>') + '</tbody>' + foot + '</table></div>' +
+      (per && tot > per ? '<div class="pager"><button class="btn line" data-p="-1">‹ Prev</button> Page ' + (page + 1) + ' of ' + Math.ceil(tot / per) + ' · ' + fmt(tot) + ' rows <button class="btn line" data-p="1">Next ›</button></div>' : '');
+    wrap.querySelectorAll('th').forEach(th => th.onclick = () => { const i = +th.dataset.i; if (sk === i) dir = -dir; else { sk = i; dir = cols[i].num ? -1 : 1; } page = 0; draw(); });
+    wrap.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { page = Math.max(0, Math.min(Math.ceil(tot / per) - 1, page + +b.dataset.p)); draw(); });
+  }
+  draw(); return wrap;
+}
+const prog = (a, b) => b ? '<div class="row" style="gap:8px;flex-wrap:nowrap"><div class="bar" style="flex:1"><i style="width:' + Math.min(100, a * 100 / b) + '%"></i></div><span style="min-width:34px;text-align:right">' + pct(a, b) + '</span></div>' : '–';
+function sect(v, title, sub, cls) { const h = el('<div class="card' + (cls ? ' ' + cls : '') + '" style="margin-bottom:10px"><h3>' + title + (sub ? ' <small>' + sub + '</small>' : '') + '</h3></div>'); v.appendChild(h); return h; }
+const STG = [['Created', 'create'], ['HR', 'hr'], ['Medical', 'med'], ['Safety', 'saf'], ['Vigilance', 'vig'], ['EIC', 'eic'], ['BRIBS', 'bribs'], ['Valid', 'valid'], ['Applied', 'applied']];
+const stageCols = () => STG.map(g => ({ h: g[0], v: r => r[g[1]], num: 1 }));
+const footFrom = (t, n) => [n].concat(STG.map(g => fmt(t[g[1]])));
+
+/* ---------- render ---------- */
+function render() {
+  if (!S.res) return;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === S.tab));
+  const showF = !['settings'].includes(S.tab); $('#filters').classList.toggle('hide', !showF);
+  const rs = rows(), fa = filtActive();
+  const sum = Core.summarize(rs, S.res.ctx, { filtered: fa, commitOk: !S.filt.pkg, reqOk: !S.filt.sup });
+  $('#fNote').textContent = fa ? 'Showing ' + fmt(rs.length) + ' of ' + fmt(S.res.rows.length) + ' cards for the selected filters. The Excel report always contains all cards.' : '';
+  const v = $('#view'); v.innerHTML = '';
+  (({ overview, packages, suppliers, trades, tvc, pending, settings })[S.tab] || overview)(v, rs, sum);
+}
+
+function overview(v, rs, sum) {
+  const t = sum.tot, fa = filtActive();
+  const pair = () => { const g = el('<div class="pair"></div>'); v.appendChild(g); return g; };
+  const hq = sum.hasReq;
+  let h = sect(v, 'Summary', fa ? 'selected filters' : 'shutdown cards with status Valid or Applied (PRE_VERIFIED), listed work orders only');
+  const sc = [], sr = { a: t.create, b: t.valid, c: t.applied, f: rs.filter(r => !r.inMaster).length, rq: t.req, pc: t.pendCreate };
+  sc.push({ h: 'Cards created', v: r => r.a, num: 1 });
+  if (hq) sc.push({ h: 'Required', v: r => r.rq, num: 1 }, { h: 'Pending (required − created)', v: r => r.pc, num: 1 });
+  sc.push({ h: 'Valid', v: r => r.b, num: 1 }, { h: 'Applied', v: r => r.c, num: 1 }, { h: 'Not in Master', v: r => r.f, num: 1 });
+  table(h, sc, [sr]);
+  h = sect(v, 'Work order-wise status', 'cards by work order and stage');
+  const wc = [{ h: 'Package', v: r => r.name }, { h: 'Work order', v: r => r.wo }];
+  if (hq) wc.push({ h: 'Required', v: r => r.req, num: 1, r: r => r.req ? fmt(r.req) : '–' });
+  wc.push(...stageCols());
+  if (hq) wc.push({ h: 'Pending create', v: r => r.req ? r.pendCreate : -1e9, num: 1, r: r => r.req ? fmt(r.pendCreate) : '–' });
+  table(h, wc, sum.pk, { foot: ['Total', ''].concat(hq ? [fmt(t.req)] : []).concat(STG.map(g => fmt(t[g[1]]))).concat(hq ? [fmt(t.pendCreate)] : []) });
+  const g = pair(), L = el('<div></div>'), Rt = el('<div></div>'); g.appendChild(L); g.appendChild(Rt);
+  h = sect(L, 'Stage-wise status', 'cards that have cleared each stage');
+  table(h, [{ h: 'Stage', v: r => r.stage }, { h: 'Done', v: r => r.done, num: 1 }, { h: 'Pending', v: r => r.pending, num: 1 }, { h: 'Done %', v: r => t.create ? r.done / t.create : 0, r: r => prog(r.done, t.create) }], sum.stage);
+  h = sect(L, 'Waiting time of Applied cards', 'days since the card was created');
+  table(h, [{ h: 'Waiting', v: r => r.bucket }, { h: 'Applied cards', v: r => r.count, num: 1 }], sum.age);
+  if (sum.prev && !fa) {
+    h = sect(L, 'Today vs previous data', 'previous = package table uploaded as Last update');
+    const nm = ['Cards created', 'HR Approval', 'Medical', 'Safety', 'Vigilance', 'EIC Status', 'BRIBS'];
+    table(h, [{ h: 'Item', v: r => r.n }, { h: 'Today', v: r => r.t, num: 1 }, { h: 'Previous', v: r => r.p, num: 1 }, { h: 'Change', v: r => r.t - r.p, num: 1, r: r => sgn(r.t - r.p) }], nm.map((n, i) => ({ n, t: sum.totalsArr[i], p: sum.prev[i] })));
+  }
+  h = sect(Rt, 'Day-wise activity', 'cards created per day (by created date), latest first');
+  table(h, [{ h: 'Date', v: r => r.day, r: r => esc(r.day.split('-').reverse().join('-')) }, { h: 'Created', v: r => r.created, num: 1 }, { h: 'Valid', v: r => r.valid, num: 1 }, { h: 'Applied', v: r => r.applied, num: 1 }], sum.daily, { sort: 0, per: 14 });
+}
+
+function packages(v, rs, sum) {
+  const hasReq = sum.hasReq;
+  const h = sect(v, 'Package-wise status', 'cards and stage counts by work order');
+  const cols = [{ h: 'Package', v: r => r.name }, { h: 'WO', v: r => r.wo }];
+  if (hasReq) cols.push({ h: 'Required', v: r => r.req, num: 1 });
+  cols.push(...stageCols());
+  if (hasReq) cols.push({ h: 'Pending create', v: r => r.req ? r.pendCreate : -1e9, num: 1, r: r => r.req ? fmt(r.pendCreate) : '–' });
+  const foot = ['Total', ''].concat(hasReq ? [fmt(sum.tot.req)] : []).concat(STG.map(g => fmt(sum.tot[g[1]]))).concat(hasReq ? [fmt(sum.tot.pendCreate)] : []);
+  table(h, cols, sum.pk, { foot });
+  h.appendChild(el('<p class="note">Pending at each stage (cards created minus done): HR ' + fmt(sum.statusPending[0]) + ' · Medical ' + fmt(sum.statusPending[1]) + ' · Safety ' + fmt(sum.statusPending[2]) + ' · Vigilance ' + fmt(sum.statusPending[3]) + ' · EIC ' + fmt(sum.statusPending[4]) + ' · BRIBS ' + fmt(sum.statusPending[5]) + '.' + (hasReq ? '' : ' Required numbers are not shown; enter them in Settings to see them here.') + '</p>'));
+}
+
+function suppliers(v, rs, sum) {
+  const fa = filtActive(), st = sum.supTot;
+  let h = sect(v, 'Supplier-wise status', 'supplier file lines matched to the supplier named in Master' + (fa ? ' · only suppliers with cards in the selection' : ''));
+  const short = [['Created', 'create'], ['HR', 'hr'], ['Med.', 'med'], ['Safety', 'saf'], ['Vig.', 'vig'], ['EIC', 'eic'], ['BRIBS', 'bribs'], ['Valid', 'valid'], ['Applied', 'applied']];
+  const cols = [
+    { h: 'Supplier', v: r => r.name, r: r => '<b>' + esc(r.name) + '</b>' },
+    { h: 'Remarks', v: r => r.remarks, r: r => {
+      const l = [];
+      if (r.remarks) l.push(esc(r.remarks));
+      if (r.extra && !r.remarks) l.push('<span class="pill p-warn">' + (r.name === NA ? 'No supplier' : 'Not in supplier file') + '</span>');
+      if (!r.extra && !r.create && !fa) l.push('<span class="pill p-bad">no cards yet</span>');
+      if (r.qaLine) l.push('<span class="pill p-info">QA/QC / Safety line</span>');
+      if (r.master && r.master !== '–' && norm2(r.master) !== norm2(r.name)) l.push('Master: ' + esc(r.master));
+      return '<span class="rm">' + (l.join('<br>') || '') + '</span>'; } },
+    { h: 'Committed', v: r => r.manpower == null ? -1 : r.manpower, num: 1, r: r => r.manpower == null ? '–' : fmt(r.manpower) }]
+    .concat(short.map(g => ({ h: g[0], v: r => r[g[1]], num: 1 })))
+    .concat([{ h: 'Left to create', v: r => r.pending == null ? -1e9 : r.pending, num: 1, r: r => r.pending == null ? '–' : fmt(r.pending) }, { h: 'Created %', v: r => r.manpower ? r.create / r.manpower : -1, num: 1, r: r => r.manpower ? pct(r.create, r.manpower) : '–' }]);
+  table(h, cols, sum.sup, { sort: 3, per: 40, foot: ['Total', '', st.commitOk ? fmt(st.manpower) : '–'].concat(short.map(g => fmt(st[g[1]]))).concat([st.commitOk ? fmt(st.manpower - st.create) : '–', '']) });
+  if (fa && !st.commitOk) h.appendChild(el('<p class="note">Committed manpower is defined per supplier, so it is not shown while an EIC or Package filter is applied.</p>'));
+  h.appendChild(el('<p class="note">A worker\'s supplier is read from Master (SUPPLIERS column first, then MAIN SUPPLIERS) and matched to the supplier file by name. If a name does not match, fix it in Settings → Supplier name mapping.</p>'));
+
+  h = sect(v, 'QA/QC and Safety Supervisor', 'workers with these designations, grouped by the supplier named in Master');
+  const qaL = sum.qaLines;
+  h.appendChild(el('<p class="note"><b>Lines in your supplier file:</b> ' + (qaL.length ? qaL.map(l => esc(l.name) + ' (' + esc(l.remarks) + ' ' + l.manpower + ')').join(' · ') : 'none') + '</p>'));
+  table(h, [{ h: 'Supplier (as matched)', v: r => r.supplier }, { h: 'Name in Master', v: r => r.master }, { h: 'QA/QC cards', v: r => r.qaCreate, num: 1 }, { h: 'Safety Supervisor cards', v: r => r.safCreate, num: 1 }, { h: 'Workers', v: r => r.names.length, r: r => '<span style="white-space:normal;display:block;min-width:200px;max-width:420px">' + esc(r.names.join(', ')) + '</span>' }], sum.qa, { sort: 2 });
+}
+
+function trades(v, rs, sum) {
+  const h = sect(v, 'Trade-wise', 'designation as shown in the Excel report (Master first, then Employee file)');
+  table(h, [{ h: 'Trade / designation', v: r => r.name, r: r => r.name === NA ? '<span class="na">' + NA + '</span>' : esc(r.name) }].concat(stageCols()), sum.trades, { sort: 1, foot: footFrom(sum.tot, 'Total') });
+}
+
+const TVC_CLS = { 'Pass': 'p-ok', 'Fail': 'p-bad', 'TVC NA': 'p-info' };
+const tvcPill = t => t ? '<span class="pill ' + TVC_CLS[t] + '">' + (t === 'TVC NA' ? 'TVC NA' : 'TVC ' + t) + '</span>' : '';
+function tvc(v, rs) {
+  if (!rs.length || rs[0].tvc == null && !S.res.rows.some(r => r.tvc != null)) { v.appendChild(el('<div class="card"><h3>TVC Status</h3><p class="note">' + (S.role === 'viewer' ? 'TVC results have not been published yet.' : 'Upload the TVC status file (optional box at the top, "View / replace files") to see the TVC results. The file needs the columns EP and the TVC result (Pass / Fail).') + '</p></div>')); return; }
+  const cnt = k => rs.filter(r => r.tvc === k).length;
+  const MODES = [['all', 'All', rs.length], ['Pass', 'Pass', cnt('Pass')], ['Fail', 'Fail', cnt('Fail')], ['TVC NA', 'TVC NA', cnt('TVC NA')]];
+  let mode = S.tmode || 'all', q = '';
+  const top = el('<div class="card" style="margin-bottom:10px"><div class="row"><h3 style="margin:0">TVC Status <small>result of the uploaded TVC file for each shutdown card; workers missing in the file (or marked Not Found) show TVC NA</small></h3><div class="grow"></div><button class="btn solid" id="tdl">⬇ Download this list</button></div>' +
+    '<div class="row" id="tmodes" style="margin-top:8px">' + MODES.map(m => '<button class="btn line tm" data-m="' + m[0] + '">' + m[1] + ' · <b>' + fmt(m[2]) + '</b></button>').join('') + '<input type="text" id="tq" placeholder="Search EP, name, trade, supplier…" style="min-width:240px"><span class="note" id="tcnt"></span></div></div>');
+  v.appendChild(top);
+  const g = el('<div class="pair"></div>'); v.appendChild(g);
+  const L = el('<div></div>'), Rt = el('<div></div>'); g.appendChild(L); g.appendChild(Rt);
+  const by = new Map();
+  rs.forEach(r => { const o = by.get(r.supplier) || { name: r.supplier, total: 0, pass: 0, fail: 0, na: 0 }; by.set(r.supplier, o); o.total++; if (r.tvc === 'Pass') o.pass++; else if (r.tvc === 'Fail') o.fail++; else o.na++; });
+  const sup = [...by.values()], T = sup.reduce((a, o) => { a.total += o.total; a.pass += o.pass; a.fail += o.fail; a.na += o.na; return a; }, { total: 0, pass: 0, fail: 0, na: 0 });
+  let h = sect(L, 'Supplier-wise TVC', 'workers by TVC result');
+  table(h, [{ h: 'Supplier', v: r => r.name }, { h: 'Total', v: r => r.total, num: 1 }, { h: 'Pass', v: r => r.pass, num: 1 }, { h: 'Fail', v: r => r.fail, num: 1 }, { h: 'TVC NA', v: r => r.na, num: 1 }, { h: 'Pass %', v: r => r.total ? r.pass / r.total : 0, num: 1, r: r => pct(r.pass, r.total) }], sup, { sort: 1, foot: ['Total', fmt(T.total), fmt(T.pass), fmt(T.fail), fmt(T.na), pct(T.pass, T.total)] });
+  h = sect(Rt, 'Workers', 'EP, name, trade, supplier and TVC result');
+  const host = document.createElement('div'); h.appendChild(host);
+  const draw = () => {
+    top.querySelectorAll('.tm').forEach(b => { b.classList.toggle('solid', b.dataset.m === mode); b.classList.toggle('line', b.dataset.m !== mode); });
+    const d = rs.filter(r => (mode === 'all' || r.tvc === mode) && (!q || (r.ep + ' ' + r.name + ' ' + r.desig + ' ' + r.supplier).toLowerCase().includes(q)));
+    $('#tcnt').textContent = fmt(d.length) + ' workers shown'; draw.cur = d; host.innerHTML = '';
+    table(host, [{ h: 'EP', v: r => r.ep }, { h: 'Name', v: r => r.name }, { h: 'Trade', v: r => r.desig }, { h: 'Supplier', v: r => r.supplier }, { h: 'TVC Status', v: r => ({ 'Fail': 0, 'TVC NA': 1, 'Pass': 2 }[r.tvc]), r: r => tvcPill(r.tvc) }], d, { sort: 4, dir: 1, per: 20 });
+  };
+  draw();
+  $('#tmodes').addEventListener('click', e => { const b = e.target.closest('.tm'); if (b) { mode = S.tmode = b.dataset.m; draw(); } });
+  $('#tq').addEventListener('input', e => { q = e.target.value.toLowerCase().trim(); draw(); });
+  $('#tdl').addEventListener('click', async () => {
+    const wb = Core.buildTvcWorkbook(window.ExcelJS, draw.cur); const buf = await wb.xlsx.writeBuffer();
+    saveBlob('TVC_status_' + mode.replace(/\s/g, '_') + '_' + dmy(S.asOf) + '.xlsx', new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  });
+}
+
+function pending(v, rs) {
+  const CS = Core.cardStatus, nV = rs.filter(r => CS(r) === 'Valid').length, nA = rs.filter(r => CS(r) === 'Applied').length;
+  const MODES = [['all', 'All cards', rs.length, () => true], ['valid', 'Valid', nV, r => CS(r) === 'Valid'], ['applied', 'Applied', nA, r => CS(r) === 'Applied']];
+  const byStage = Core.STAGES.map(s => [s[1], rs.filter(r => r.pending.includes(s[1])).length]);
+  let mode = S.pmode || 'all', stage = '', q = '', tv = '';
+  const top = el('<div class="card"><div class="row" style="margin-bottom:8px"><h3 style="margin:0">Cards tracker <small>select a status to list only those cards</small></h3><div class="grow"></div><button class="btn line" id="sdl">⬇ Supplier-wise status (Excel)</button> <button class="btn solid" id="pdl">⬇ Download this list</button></div>' +
+    '<div class="row" id="pmodes" style="margin-bottom:8px">' + MODES.map(m => '<button class="btn line pm" data-m="' + m[0] + '">' + m[1] + ' · <b>' + fmt(m[2]) + '</b></button>').join('') + '</div>' +
+    '<div class="row"><input type="text" id="pq" placeholder="Search name, EP, mobile, supplier…" style="min-width:260px"> <select id="ps"><option value="">Any pending stage</option>' + byStage.map(b => '<option value="' + b[0] + '">Pending at ' + b[0] + ' (' + b[1] + ')</option>').join('') + '</select>' + (rs.some(r => r.tvc) ? ' <select id="pt"><option value="">Any TVC result</option><option>Pass</option><option>Fail</option><option>TVC NA</option></select>' : '') + '<span class="note" id="pcnt"></span></div><div id="ptab" style="margin-top:8px"></div></div>');
+  v.appendChild(top);
+  const stCls = { 'Valid': 'p-ok', 'Applied': 'p-warn' };
+  const draw = () => {
+    const f = MODES.find(m => m[0] === mode)[3];
+    top.querySelectorAll('.pm').forEach(b => { b.classList.toggle('solid', b.dataset.m === mode); b.classList.toggle('line', b.dataset.m !== mode); });
+    const d = rs.filter(r => f(r) && (!stage || r.pending.includes(stage)) && (!tv || r.tvc === tv) && (!q || (r.name + ' ' + r.ep + ' ' + r.mobile + ' ' + r.supplier + ' ' + r.desig).toLowerCase().includes(q)));
+    $('#pcnt').textContent = fmt(d.length) + ' cards shown';
+    $('#ptab').innerHTML = ''; draw.cur = d;
+    table($('#ptab'), [{ h: 'EP Number', v: r => r.ep }, { h: 'Workman', v: r => r.name }, { h: 'Mobile', v: r => r.mobile, r: r => r.mobile === NA ? '<span class="na">' + NA + '</span>' : esc(r.mobile) }, { h: 'Supplier', v: r => r.supplier, r: r => r.supplier === NA ? '<span class="na">' + NA + '</span>' : esc(r.supplier) },
+      { h: 'Trade', v: r => r.desig }, { h: 'Package', v: r => r.pkgName }, { h: 'Card status', v: r => CS(r), r: r => '<span class="pill ' + (stCls[CS(r)] || 'p-info') + '">' + esc(CS(r)) + '</span>' },
+      { h: 'Days since created', v: r => r.age == null ? -1 : r.age, num: 1, r: r => r.age == null ? '–' : r.age },
+      { h: 'Pending stages / TVC', v: r => r.pending.length, r: r => '<span style="white-space:normal;display:block;min-width:200px">' + (r.pending.length ? r.pending.map(p => '<span class="pill ' + (p === 'Medical' || p === 'Safety' ? 'p-warn' : 'p-bad') + '">' + p + '</span>').join('') : '') + tvcPill(r.tvc) + (!r.pending.length && !r.tvc ? '–' : '') + '</span>' }], d, { sort: 7, per: 25 });
+  };
+  draw();
+  $('#pmodes').addEventListener('click', e => { const b = e.target.closest('.pm'); if (b) { mode = S.pmode = b.dataset.m; draw(); } });
+  $('#pq').addEventListener('input', e => { q = e.target.value.toLowerCase().trim(); draw(); });
+  $('#ps').addEventListener('change', e => { stage = e.target.value; draw(); });
+  if ($('#pt')) $('#pt').addEventListener('change', e => { tv = e.target.value; draw(); });
+  const XL = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  $('#pdl').addEventListener('click', async () => {
+    const wb = Core.buildPendingWorkbook(window.ExcelJS, draw.cur); const buf = await wb.xlsx.writeBuffer();
+    saveBlob('Cards_' + mode + '_' + dmy(S.asOf) + '.xlsx', new Blob([buf], { type: XL }));
+  });
+  $('#sdl').addEventListener('click', async () => {
+    const sm = Core.summarize(rs, S.res.ctx, { filtered: filtActive(), commitOk: !S.filt.pkg, reqOk: !S.filt.sup });
+    const wb = Core.buildSupplierWorkbook(window.ExcelJS, sm, rs); const buf = await wb.xlsx.writeBuffer();
+    saveBlob('Supplier_status_' + dmy(S.asOf) + '.xlsx', new Blob([buf], { type: XL }));
+  });
+}
+
+function settings(v) {
+  const pk = S.cfg.packages;
+  const c = el('<div class="grid g2"><div class="card"><h3>Packages <small>name, work order, and required manpower (optional)</small></h3><table><thead><tr><th>Package</th><th>Work order</th><th>Required</th></tr></thead><tbody>' +
+    pk.map((p, i) => '<tr><td><input type="text" data-k="name" data-i="' + i + '" value="' + esc(p.name) + '" style="width:100%"></td><td><input type="text" data-k="wo" data-i="' + i + '" value="' + esc(p.wo) + '" style="width:120px"></td><td><input type="number" data-k="req" data-i="' + i + '" value="' + (p.req || '') + '" placeholder="–" style="width:90px"></td></tr>').join('') +
+    '</tbody></table><div class="row" style="margin-top:8px"><b>Total required (all packages)</b><input type="number" id="totreq" value="' + (S.cfg.totalReq || '') + '" style="width:100px"></div><p class="note">Cards are placed in a package by work order. Cards whose work order is not listed here are left out of the report. Per-package Required is optional. When it is empty, the total above is used for the Total row and the per-package cells show "–".</p></div>' +
+    '<div class="card"><h3>Supplier name mapping <small>one per line: name in Master = name in supplier file</small></h3><textarea id="alias" placeholder="SHREYANSH SINGH = Shriyansh"></textarea><p class="note">Only needed when a name written in Master is not matched automatically (see "not in supplier file" in the Suppliers tab). Case and spaces are ignored.</p></div></div>');
+  v.appendChild(c); $('#alias').value = S.cfg.aliasText;
+  v.appendChild(el('<div class="row" style="margin-top:14px"><button class="btn solid" id="apply">Apply and recalculate</button><button class="btn line" id="reset">Reset</button><span class="note">Settings are remembered in this browser.</span></div>'));
+  $('#apply').onclick = () => {
+    c.querySelectorAll('input').forEach(i => { const p = S.cfg.packages[+i.dataset.i]; p[i.dataset.k] = i.dataset.k === 'req' ? (+i.value || 0) : i.value.trim(); });
+    S.cfg.totalReq = +$('#totreq').value || 0; store.set('sct_totreq2', S.cfg.totalReq); S.cfg.aliasText = $('#alias').value; store.set('sct_pk4', JSON.stringify(S.cfg.packages)); store.set('sct_alias3', S.cfg.aliasText); recompute(); toast('Recalculated');
+  };
+  $('#reset').onclick = () => { S.cfg.packages = Core.DEFAULT_PACKAGES.map(p => Object.assign({}, p)); S.cfg.totalReq = 2089; try { localStorage.removeItem('sct_totreq2'); } catch (e) {} S.cfg.aliasText = ''; try { localStorage.removeItem('sct_pk4'); localStorage.removeItem('sct_alias3'); } catch (e) {} recompute(); toast('Reset'); };
+}
+
+/* ---------- download ---------- */
+function toast(t) { const d = $('#toast'); d.textContent = t; d.classList.remove('hide'); clearTimeout(toast.t); toast.t = setTimeout(() => d.classList.add('hide'), 2600); }
+const dmy = d => { const x = Core.fmtDMY(d).split('-'); return x.join('.'); };
+async function saveBlob(name, blob) {
+  try {
+    if (window.claude && window.claude.use) {
+      const dl = await window.claude.use('downloads');
+      if (dl) { await dl.save({ filename: name, data: blob }); toast('Saved ' + name); return; }
+    }
+  } catch (e) { if (e && e.code === 'declined') { toast('Download cancelled'); return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); toast('Downloading ' + name);
+}
+$('#dlExcel').addEventListener('click', async () => {
+  if (!S.res) return; const b = $('#dlExcel'); b.disabled = true; b.textContent = 'Building…';
+  try {
+    const sum = Core.summarize(S.res.rows, S.res.ctx);
+    const wb = Core.buildWorkbook(window.ExcelJS, S.res, sum); const buf = await wb.xlsx.writeBuffer();
+    await saveBlob(dmy(S.asOf) + '_Shutdown_Card_Report.xlsx', new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  } catch (e) { setMsg('Excel export failed: ' + e.message, true); }
+  b.disabled = false; b.textContent = '⬇ Download Excel report';
+});
+window.__S = S; // for testing
+
+/* ---------- shared publishing (hosted page): the owner uploads and publishes; everyone else sees the last published version ---------- */
+const HOSTED = !!(window.claude && window.claude.use);
+S.role = window.__SITE__ ? 'viewer' : (HOSTED ? 'loading' : 'local'); S.canPublish = false; S.dirty = false; S.published = null; S.lastOwnVer = null;
+let DB = null;
+function pubUi() {
+  const rowEl = $('#pubrow'); if (!S.canPublish) { rowEl.classList.add('hide'); return; }
+  rowEl.classList.remove('hide');
+  const m = S.published && S.published.meta, st = $('#pubState'), btn = $('#pubBtn');
+  if (S.dirty) { st.textContent = 'You are viewing unpublished data from the files you uploaded. ' + (m ? 'Everyone else still sees the version published ' + fmtTime(m.at) + '.' : 'Nothing has been published yet.'); btn.disabled = false; st.style.color = 'var(--warn)'; }
+  else { st.textContent = m ? 'Everyone currently sees the version published ' + fmtTime(m.at) + '. To update it, upload the new files and publish.' : 'Nothing has been published yet. Upload the four files, check the report, then publish it.'; btn.disabled = true; st.style.color = ''; }
+}
+function chunkRows(rows) {
+  const out = []; let cur = [], size = 0;
+  rows.forEach(r => { const l = JSON.stringify(r).length; if (cur.length && size + l > 150000) { out.push(cur); cur = []; size = 0; } cur.push(r); size += l; });
+  if (cur.length) out.push(cur); return out;
+}
+async function publish() {
+  if (!S.canPublish || !DB || !S.dirty || !S.res) return;
+  const btn = $('#pubBtn'); btn.disabled = true; $('#pubState').textContent = 'Publishing…';
+  try {
+    const old = S.published && S.published.meta ? S.published.meta.chunkIds || [] : [];
+    const ver = String(Date.now()), chunks = chunkRows(S.res.rows), ids = [];
+    for (let i = 0; i < chunks.length; i++) { const id = 'r_' + ver + '_' + i; await DB.doc('pub/' + id).set({ ver, i, rows: JSON.parse(JSON.stringify(chunks[i])) }); ids.push(id); }
+    const meta = { ver, at: new Date().toISOString(), chunkIds: ids, n: S.res.rows.length, ctx: JSON.parse(JSON.stringify(S.res.ctx)), counts: S.res.counts,
+      files: FILES.filter(f => S.names[f.id]).map(f => ({ id: f.id, name: dispName(S.names[f.id]), at: S.times[f.id] ? S.times[f.id].toISOString() : '' })) };
+    S.lastOwnVer = ver;
+    await DB.doc('pub/meta').set(meta);
+    for (const id of old) { try { await DB.doc('pub/' + id).delete(); } catch (e) {} }
+    S.published = { res: S.res, meta }; S.dirty = false; S.src = 'published';
+    present(); pubUi(); toast('Published. Everyone now sees this version.');
+  } catch (e) {
+    S.dirty = true; pubUi(); setMsg('Publishing failed: ' + ((e && e.message) || e) + '. Please try again.', true);
+  }
+}
+async function loadPublished(meta, tries) {
+  tries = tries || 0;
+  try {
+    const snaps = await Promise.all(meta.chunkIds.map(id => DB.doc('pub/' + id).get()));
+    if (snaps.some(x => !x.exists)) { if (tries < 3) { setTimeout(() => loadPublished(meta, tries + 1), 1500); } return; }
+    const rows = []; snaps.forEach(x => { (x.data().rows || []).forEach(r => { r.created = r.created ? new Date(r.created) : null; r.printD = r.printD ? new Date(r.printD) : null; rows.push(r); }); });
+    S.published = { res: { rows, ctx: meta.ctx, counts: meta.counts || {}, fill: {}, unmatchedSuppliers: {} }, meta };
+    const first = !S.res;
+    if (S.src !== 'local' || !S.dirty) { showPublished(); if (!first && !S.canPublish) toast('New data has been published. The dashboard is updated.'); } else pubUi();
+  } catch (e) { if (tries < 3) setTimeout(() => loadPublished(meta, tries + 1), 2000); else setMsg('The published data could not be loaded. Please refresh the page.', true); }
+}
+const b64d = x => Uint8Array.from(atob(x), c => c.charCodeAt(0));
+async function decryptPayload(pkg, pw) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64d(pkg.salt), iterations: pkg.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const buf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(pkg.iv) }, key, b64d(pkg.ct));
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+async function initSite() {
+  renderTabs(); $('#asof').textContent = 'This dashboard is password protected.';
+  let pkg;
+  try { const r = await fetch('data.enc.json', { cache: 'no-store' }); if (!r.ok) throw new Error('missing'); pkg = await r.json(); }
+  catch (e) { $('#asof').textContent = 'No data has been published yet. Please check back later.'; return; }
+  const open = async pw => {
+    const p = await decryptPayload(pkg, pw);
+    p.rows.forEach(r => { r.created = r.created ? new Date(r.created) : null; r.printD = r.printD ? new Date(r.printD) : null; });
+    S.published = { res: { rows: p.rows, ctx: p.meta.ctx, counts: p.meta.counts || {}, fill: {}, unmatchedSuppliers: {} }, meta: p.meta };
+    showPublished(); $('#lock').classList.add('hide');
+    try { sessionStorage.setItem('sct_pw', pw); } catch (e) {}
+  };
+  let saved = null; try { saved = sessionStorage.getItem('sct_pw'); } catch (e) {}
+  if (saved) { try { await open(saved); return; } catch (e) {} }
+  $('#lock').classList.remove('hide'); $('#lockPw').focus();
+  const go = async () => { $('#lockErr').textContent = ''; $('#lockBtn').disabled = true; try { await open($('#lockPw').value); } catch (e) { $('#lockErr').textContent = 'Incorrect password. Please try again.'; } $('#lockBtn').disabled = false; };
+  $('#lockBtn').addEventListener('click', go); $('#lockPw').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+}
+async function initShared() {
+  if (window.__SITE__) { initSite(); return; }
+  if (!HOSTED) { $('#upcard').classList.remove('hide'); renderTabs(); return; }
+  let USER = null;
+  try { USER = await window.claude.use('user'); } catch (e) {}
+  try { DB = await window.claude.use('db'); } catch (e) { DB = null; }
+  S.canPublish = !!(DB && USER && ((USER.isOwner && USER.isOwner()) || (USER.canEdit && USER.canEdit())));
+  S.role = !DB ? 'nodb' : (S.canPublish ? 'editor' : 'viewer');
+  renderTabs();
+  if (S.role === 'editor') { $('#upcard').classList.remove('hide'); $('#pubBtn').addEventListener('click', publish); pubUi(); }
+  if (S.role === 'nodb') { $('#asof').textContent = 'Please sign in to view the dashboard.'; return; }
+  $('#asof').textContent = 'Loading the latest published data…';
+  const timer = setTimeout(() => { if (!S.published && !S.res) $('#asof').textContent = 'The published data is taking longer than usual to load…'; }, 10000);
+  DB.doc('pub/meta').onSnapshot(snap => {
+    clearTimeout(timer);
+    if (!snap.exists) {
+      S.published = null;
+      if (!S.res) $('#asof').textContent = S.role === 'viewer' ? 'No data has been published yet. Please check back later.' : IDLE_TXT;
+      pubUi(); if (S.role === 'editor') collapseUploads(false); return;
+    }
+    const meta = snap.data();
+    if (S.published && S.published.meta.ver === meta.ver) return;
+    if (meta.ver === S.lastOwnVer) { if (S.published) S.published.meta = meta; return; }
+    loadPublished(meta);
+  }, () => { setMsg('The published data could not be reached. Please refresh the page.', true); });
+}
+initShared();
+
+})();
+</script>
+</body>
+</html>
